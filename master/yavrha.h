@@ -1,6 +1,6 @@
 /*
-			Yavrha Project
-			Carlos Silva, 2012
+	    Yavrha Project
+	  Carlos Silva, 2012
 		
              LUFA Library
      Copyright (C) Dean Camera, 2011.
@@ -14,18 +14,6 @@
 #define YAVRHA_H_
 
 /*
- /*
-			Yavrha Project
-			Carlos Silva, 2012
-		
-             LUFA Library
-     Copyright (C) Dean Camera, 2011.
-
-  dean [at] fourwalledcubicle [dot] com
-           www.lufa-lib.org
-*/
-
-/** \file
  *
  *  Header file for VirtualSerial.c.
  */
@@ -40,9 +28,21 @@
 		#include <stdlib.h>
 		#include <avr/eeprom.h>
 		#include "Descriptors.h"
-		//#include <LUFA/Version.h>
-		//#include <LUFA/Drivers/USB/USB.h>
+		#include <LUFA/Version.h>
+		#include <LUFA/Drivers/USB/USB.h>
 		#include <avr/pgmspace.h>
+	
+	/* LUFA Function Prototypes: */
+		void SetupHardware(void);
+		void CheckJoystickMovement(void);
+
+		void EVENT_USB_Device_Connect(void);
+		void EVENT_USB_Device_Disconnect(void);
+		void EVENT_USB_Device_ConfigurationChanged(void);
+		void EVENT_USB_Device_ControlRequest(void);
+
+
+
 
 	/* Struct Declaration */
 	/* This is the structure to hold nodes Configurations */
