@@ -35,7 +35,6 @@ tNodesData Nodes[MAXSNODES];
 
 
 // Function Prototypes
-
 void spi_init(void);
 void nrf_config(void);
 void nrf_read_register(uint8_t, uint8_t *, uint8_t);
@@ -57,9 +56,9 @@ void nrf_TXnodeCfg(uint8_t, uint8_t *);
 
 
 // ************************************************************************************************ //
-	//ISP Functions. Not to be used by any function other than nrf_*
-	// For ISP for MEGA32U4
-	// Initialize pins for spi communication
+ // ISP Functions. Not to be used by any function other than nrf_*
+ // For ISP for MEGA32U4
+ // Initialize pins for spi communication
 	void spi_init(void)
 	
 	{

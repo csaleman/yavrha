@@ -1,3 +1,7 @@
+ /*
+ http://www.tinkerer.eu/AVRLib/nRF24L01
+ */
+ 
  /* Memory Map */
 #define CONFIG      0x00
 #define EN_AA       0x01
