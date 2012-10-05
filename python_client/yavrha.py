@@ -42,7 +42,7 @@ while 'node'+str(i) in Node_Cfg_Obj[0]:
         client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",None, 1, True)
         client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",None, 1, True)
     i += 1
-print(ACTIVE_NODES)        
+#print(ACTIVE_NODES)        
 
 def Send_Data():
     ser.flushInput()    # make sure input buffer is empty
@@ -58,22 +58,32 @@ def Send_Data():
 #        print(Node_Data_Obj[0]['node'+str(item)])
         client.publish(MQTT_TOPIC + "/node"+str(item),str(Node_Data_Obj[0]['node'+str(item)]), 1)
 
+def Received_Cmd(msg):
+    Node = str(msg.topic).lstrip(MQTT_TOPIC+'/').rstrip("/cmd").strip("node")
+    command = bytes("send "+Node+" "+msg.payload.decode()+" \r\n","utf-8")
+    ser.write(command)
+#    print(ser.readline().decode())
+
 def on_connect(mosq, obj, rc):
     if rc == 0:
         print("Connected successfully.")
 
 client.on_connect = on_connect
 
+    
 def on_message(mosq, obj, msg):
-    print("Message received on topic "+str(msg.topic)+" with QoS "+str(msg.qos)+" and payload "+msg.payload.decode())
+#    print("Message received on topic "+str(msg.topic)+" with QoS "+str(msg.qos)+" and payload "+msg.payload.decode())
+    Received_Cmd(msg)
 client.on_message = on_message
 
 
+
 # Subcription
-client.subscribe("yavrha/node5/cmd", 0)
+client.subscribe("yavrha/+/cmd", 0)
 
 while True:
     start_time = int(time.time())
     Send_Data()
     while (int(time.time()) < start_time + REFRESH_DELAY):
         client.loop()
+        
