@@ -18,12 +18,12 @@ TARGET = yavrha_temp_sender
 # Programming hardware: type avrdude -c ?
 # to get a full listing.
 # AVRDUDE_PROGRAMMER = dapa
-AVRDUDE_PROGRAMMER = usbtiny       
+AVRDUDE_PROGRAMMER = dragon_isp       
 # AVRDUDE_PROGRAMMER = dt006
 
-AVRDUDE_PORT = /dev/usb    # not really needed for usb 
-#AVRDUDE_PORT = /dev/parport0           # linux
-# AVRDUDE_PORT = lpt1		       # windows
+#AVRDUDE_PORT = /dev/usb    	# not really needed for usb 
+AVRDUDE_PORT = usb           	# linux
+# AVRDUDE_PORT = lpt1		# windows
 
 ############# Don't need to change below here for most purposes  (Elliot)
 
@@ -345,7 +345,7 @@ clean: begin clean_list finished end
 clean_list :
 	@echo
 	@echo $(MSG_CLEANING)
-	$(REMOVE) $(TARGET).hex
+#	$(REMOVE) $(TARGET).hex
 	$(REMOVE) $(TARGET).eep
 	$(REMOVE) $(TARGET).obj
 	$(REMOVE) $(TARGET).cof

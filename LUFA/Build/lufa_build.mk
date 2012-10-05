@@ -239,7 +239,8 @@ mostlyclean:
 
 clean: mostlyclean
 	@echo $(MSG_REMOVE_CMD) Removing output files of \"$(TARGET)\"
-	rm -f $(TARGET).elf $(TARGET).hex $(TARGET).eep $(TARGET).map $(TARGET).lss $(TARGET).sym $(TARGET).a
+	#rm -f $(TARGET).elf $(TARGET).hex $(TARGET).eep $(TARGET).map $(TARGET).lss $(TARGET).sym $(TARGET).a
+	rm -f $(TARGET).elf $(TARGET).eep $(TARGET).map $(TARGET).lss $(TARGET).sym $(TARGET).a
 
 all: build_begin check-source gcc-version elf hex lss sym size build_end
 
