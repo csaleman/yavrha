@@ -13,7 +13,7 @@ ser = serial.Serial('/dev/ttyACM0',19200, timeout=.1)
 
 #mosquitto setting
 client = mosquitto.Mosquitto("yavrha-client")
-client.connect("127.0.0.1")
+client.connect("test.mosquitto.org")
 
 # Load Node Configuration
 command = bytes("print_cfg \r\n","utf-8")

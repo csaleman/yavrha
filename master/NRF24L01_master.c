@@ -447,14 +447,14 @@ void stopRadio(void){
 
 void NodeStructToRam(void){
 	
-	eeprom_read_block((void *)&Nodes,(const void *)&eeNodes,sizeof(tNodesData)*6);
+	eeprom_read_block((void *)&Nodes,(const void *)&eeNodes,sizeof(tNodesData)*MAXSNODES);
 	
 }
 
 // Save Nodes ram struct to EEPROM
 void NodeStrucToEeprom(void){
 	
-	eeprom_update_block((const void *)&Nodes,(void *)&eeNodes,sizeof(tNodesData)*6);
+	eeprom_update_block((const void *)&Nodes,(void *)&eeNodes,sizeof(tNodesData)*MAXSNODES);
 	
 }
 
