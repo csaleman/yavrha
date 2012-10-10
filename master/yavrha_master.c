@@ -104,8 +104,6 @@ ISR (TIMER0_COMPA_vect)
 
 ISR(INT0_vect) {
 	
-	cli();
-	
 	Save_RadioData();	// Save received data in structure
 	
 	if (PRINT_FLAG)		// Is verbose mode enable?
@@ -113,10 +111,6 @@ ISR(INT0_vect) {
 	Print_RadioData();	// Print everyting in usb
 	}	
 		PORTE ^= (1<<PORTE6);	// toggle led.
-		
-	
-	sei();
-	
 }
 
 

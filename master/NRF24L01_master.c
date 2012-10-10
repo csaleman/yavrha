@@ -45,13 +45,14 @@ void spi_transfer_sync (uint8_t *, uint8_t *, uint8_t);
 void spi_transmit_sync (uint8_t *, uint8_t);
 uint8_t spi_fast_shift (uint8_t);
 void nrf_TXnodeCfg(uint8_t, uint8_t *);
+uint8_t nrf_send_completed(void);
 
 
 // Since individual bits cannot be modified, all CONFIG settings must be set up at start up.
 // EN_CRC enable CRC, CRCO set up 2 bytes CRC. 
 // This is a primary RX, PRIM_RX must be set.
-#define RX_POWERUP	  nrf_config_register(CONFIG,(1<<PWR_UP)|(1<<EN_CRC) | (1<<CRCO) | (1<<PRIM_RX) );
-#define TX_POWERUP	  nrf_config_register(CONFIG,(1<<PWR_UP)|(1<<EN_CRC) | (1<<CRCO));
+#define RX_POWERUP	  nrf_config_register(CONFIG,(1<<PWR_UP)|(1<<EN_CRC) | (1<<CRCO) | (1<<PRIM_RX) | (1<<MASK_TX_DS) | (1<<MASK_MAX_RT));
+#define TX_POWERUP	  nrf_config_register(CONFIG,(1<<PWR_UP)|(1<<EN_CRC) | (1<<CRCO) | (1<<MASK_TX_DS) | (1<<MASK_MAX_RT) | (1<<MASK_RX_DR));
 #define POWERDOWN	  nrf_config_register(CONFIG, (1<<EN_CRC) | (1<<CRCO));
 
 
@@ -176,13 +177,15 @@ uint8_t nrf_send_completed()
 	status = spi_fast_shift(NOP);		// Execute a NOP operation to get status register.
 	CSN_HIGH
 		
-	if ( status & (1<<TX_DS))
+	if ( status & (1<<TX_DS))			// Check if package was received
 	{
-		return_status =  1;
+	nrf_config_register(STATUS,(1<<TX_DS));	// Clear NRF Interrupt write 1 to clear bit.		
+	return_status =  1;
 	} 
 	
-	else if (status & (1<<MAX_RT))
+	else if (status & (1<<MAX_RT))		// Check if max number of RTs was asserted, failed
 	{
+		nrf_config_register(STATUS,(1<<MAX_RT));	// Clear NRF Interrupt write 1 to clear bit.		
 		return_status = 2;
 	}
 	else
@@ -360,7 +363,10 @@ uint8_t send_node_data(uint8_t * node_data)
 {
 	uint8_t send_result;	// to store send result
 	uint8_t i;
+	uint8_t status_reg;
 	
+	CE_LOW		// Put radio is in standby;
+
 	CSN_LOW                    // Pull down chip select
     spi_fast_shift( W_TX_PAYLOAD ); // Send Write Payload Command
     spi_transfer_sync(node_data,node_data,PAYLOAD_WIDTH);   // write data
@@ -370,16 +376,16 @@ uint8_t send_node_data(uint8_t * node_data)
 	_delay_us(20);			// Short Delay to make sure CE is High for at least 10us
 	CE_LOW
 										// Wait until data is sent or MAX_RT flag
+
 	// This function return 1 if data was received by node, 2 MAX_RT "no received", or 0 either yet.
-	// The i loop with the constant is to avoid infinite loops. 
+	// The i loop with the constant is to avoid infinite loops.
+
+		nrf_config_register(STATUS,(1<<MAX_RT) | (1<<TX_DS));	// Clear NRF Interrupt write 1 to clear bit.
+
 	do {
 			send_result = nrf_send_completed();
 			i++;
-			_delay_us(10);	// Short Delay trouble shooting
 		} while ( send_result == 0 && i<50);
-
-	nrf_config_register(STATUS,(1<<TX_DS)|(1<<MAX_RT));	// Reset NRF Interrupt write 1 to clear bit.
-	
 	
 	return send_result;
 	
@@ -408,8 +414,6 @@ uint8_t send_node_cfg(uint8_t node) {
 		buffer[5] = Nodes[node].Node_Number;
 		buffer[6] = eeprom_read_byte(&CH);
 	
-	nrf_config_register(STATUS,(1<<TX_DS)|(1<<MAX_RT));	// Reset NRF Interrupt write 1 to clear bit.
-	
 	CSN_LOW                    // Pull down chip select
     spi_fast_shift( W_TX_PAYLOAD ); // Send Read Payload Command
     spi_transfer_sync(buffer,buffer,CFG_PAYLOAD_WIDTH);   // Read payload
@@ -419,14 +423,13 @@ uint8_t send_node_cfg(uint8_t node) {
 	_delay_us(20);			// Short Delay to make sure CE is High for at least 10us
 	CE_LOW
 										// Wait until data is sent or MAX_RT flag
-	// This function return 1 if data was received by node, 2 MAX_RT "no received", or 0 either yet.
+	i = 0;
+	// This function return 1 if data was received by node, 2 MAX_RT "no received", or 0 either yet.	
 	do {
 			send_result = nrf_send_completed();
 			i++;
 		} while ( send_result == 0 && i<50);
 
-	nrf_config_register(STATUS,(1<<TX_DS)|(1<<MAX_RT));	// Reset NRF Interrupt write 1 to clear bit.
-	
 	
 	return send_result;
 }
