@@ -645,9 +645,9 @@ void SetupHardware(void)
 
 	/* Setup Timer interrupt for USB Main TASK */
 	TCCR0B |= (1 << WGM02);  	// enable Wave Generation modes
-	TCCROB |= (1 << CS02) | (1 << CS00);	// Set prescalar to Fc/1024
-	TCCR0A |= (1 << WGM1);		// Set wave generation mode to CTC "Clear Timer on Compare"
-	TIMSK  |= (1 << OCIE0A);	// Enable Timer Interrupt
+	TCCR0B |= (1 << CS02) | (1 << CS00);	// Set prescalar to Fc/1024
+	TCCR0A |= (1 << WGM01);		// Set wave generation mode to CTC "Clear Timer on Compare"
+	TIMSK0  |= (1 << OCIE0A);	// Enable Timer Interrupt
 	/*	
 		frq = FrqClk / 2 * pre-scaler * (1+OCRnA_Value)				
 	*/	
