@@ -69,7 +69,7 @@ void nrf_TXnodeCfg(uint8_t, uint8_t *);
 		// Since CSN is CS "NON", Disable Slave
 		PORT_ISP |= (1<<CSN);
 		
-		// Set the ISP Control Register
+		// Set the ISP Control Register and ISP speed
 		
 		SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR1) | (1<<SPR0);
 		
@@ -375,6 +375,7 @@ uint8_t send_node_data(uint8_t * node_data)
 	do {
 			send_result = nrf_send_completed();
 			i++;
+			_delay_us(10);	// Short Delay trouble shooting
 		} while ( send_result == 0 && i<50);
 
 	nrf_config_register(STATUS,(1<<TX_DS)|(1<<MAX_RT));	// Reset NRF Interrupt write 1 to clear bit.

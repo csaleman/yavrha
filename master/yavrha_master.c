@@ -93,8 +93,14 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
  */
 static FILE USBSerialStream;
 
+/* Important, this interrupt must be executed within 30ms. To keep the USB alive. */
+ISR (TIMER0_COMPA_vect)
+	{
+		USB_USBTask();
+	}
 
 
+/* External inturrpt caused by radio */
 
 ISR(INT0_vect) {
 	
@@ -177,7 +183,7 @@ int main(void)
 						
 		
 		CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
-		USB_USBTask();
+		
 	}
 }
 
@@ -186,7 +192,6 @@ void Cmd_Handler( char *CmdBuff) {
 		
 		char *token;
 		uint8_t temp,temp1,i,k;
-		uint8_t temp_array[10];
 		uint8_t ram_NRF_ADDR[5];
 		const char delimiter[] = " ,"; // token delimiter is just one space or coma.
 		// array to store the message to be send to node
@@ -454,8 +459,8 @@ void Cmd_Handler( char *CmdBuff) {
 										eeprom_read_block((void *)&ram_NRF_ADDR, (const void *)&eeNRF_ADDRESS,5);
 										//get node address
 										ram_NRF_ADDR[4] = Nodes[temp].NodeAddr;
-										
-										nrf_TXnodeCfg(eeprom_read_byte(&CH),ram_NRF_ADDR);	// Configure radio with ch and rx node address
+										// Configure radio with ch and rx node address
+										nrf_TXnodeCfg(eeprom_read_byte(&CH),ram_NRF_ADDR);	
 											
 											// Send Data to Node X
 											if(send_node_data(msg_to_send) == 1) 		
@@ -531,6 +536,7 @@ void print_cfg() {
 	channel = eeprom_read_byte(&CH);
 	// LOAD eeNRF_ADDRESS from EEPROM into ramNRF_ADDR
 	eeprom_read_block((void *)&ram_NRF_ADDR, (const void *)&eeNRF_ADDRESS,5);
+
 	
 	fprintf(&USBSerialStream, "{\"channel\":%i,\"home_addr\":[%i, %i, %i, %i],\n",channel,ram_NRF_ADDR[0],ram_NRF_ADDR[1],ram_NRF_ADDR[2],ram_NRF_ADDR[3]);
 	
@@ -627,8 +633,6 @@ void Print_RadioData(void) {
 }
 
 
-
-
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
@@ -638,6 +642,16 @@ void SetupHardware(void)
 
 	/* Disable clock division */
 	clock_prescale_set(clock_div_1);
+
+	/* Setup Timer interrupt for USB Main TASK */
+	TCCR0B |= (1 << WGM02);  	// enable Wave Generation modes
+	TCCROB |= (1 << CS02) | (1 << CS00);	// Set prescalar to Fc/1024
+	TCCR0A |= (1 << WGM1);		// Set wave generation mode to CTC "Clear Timer on Compare"
+	TIMSK  |= (1 << OCIE0A);	// Enable Timer Interrupt
+	/*	
+		frq = FrqClk / 2 * pre-scaler * (1+OCRnA_Value)				
+	*/	
+	OCR0A	= 128;				// Set timer to apprx. 16ms
 
 	/* Hardware Initialization */
 	USB_Init();
