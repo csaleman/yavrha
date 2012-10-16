@@ -2,7 +2,7 @@
  * yavrha_sender.c
  *
  * Created: 3/20/2012 7:18:09 PM
- *  Author: John
+ *  Author: Carlos Silva
  */ 
 
 
