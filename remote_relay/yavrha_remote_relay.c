@@ -27,7 +27,11 @@ uint8_t MSGID, RECV_MSGID, RECV_NODE_NUMBER;
 
 // Function Prototypes
 void relay_action(void);
-
+void nrf_read_cfg_payload(void);
+void nrf_read_payload(void);
+void nrf_tx_config(void);
+void nrf_send(uint8_t *);
+void nrf_rx_config(void);
 
 //          *** IMPORTANT ***
 // Avoid nasty resets after wdt reset.
@@ -90,7 +94,7 @@ ISR(TIMER1_COMPA_vect)
 
 void relay_action() {
 	
-	//TODO validate node number
+	// validate node number
 	if (NODE_NUMBER == RECV_NODE_NUMBER)
 	{
 	

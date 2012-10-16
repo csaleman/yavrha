@@ -155,7 +155,7 @@ uint8_t nrf_send_completed()
 	
 	status = nrf_command(NOP);
 		
-	if (status & (1<<MAX_RT) || status & (1<<TX_DS))
+	if ((status & (1<<MAX_RT)) || (status & (1<<TX_DS)))
 	{
 		return 1;
 	} 
