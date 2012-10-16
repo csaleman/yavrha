@@ -2,7 +2,7 @@
  * yavrha_remote_relay.c
  *
  * Created: 8/12/2012 5:16:28 PM
- *  Author: John
+ *  Author: Carlos Silva
  */ 
 
 #include <avr/io.h>
