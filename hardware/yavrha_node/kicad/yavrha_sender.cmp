@@ -1,0 +1,199 @@
+Cmp-Mod V01 Created by PcbNew date = Sat 22 Sep 2012 20:19:07 EDT
+
+BeginCmp
+TimeStamp = /4F4989EE;
+Reference = BT1;
+ValeurCmp = BATTERY;
+IdModule  = CR2032H_20mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4845F6;
+Reference = C1;
+ValeurCmp = C;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /50564A16;
+Reference = C2;
+ValeurCmp = .1uF;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /5056481C;
+Reference = C3;
+ValeurCmp = .1uF;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /5056472B;
+Reference = D1;
+ValeurCmp = DIODE;
+IdModule  = sod323;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F459E96;
+Reference = IC1;
+ValeurCmp = ATMEGA168PA-A;
+IdModule  = TQFP32;
+EndCmp
+
+BeginCmp
+TimeStamp = /505CFAF8;
+Reference = JP1;
+ValeurCmp = JUMPER;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F497325;
+Reference = NTC1;
+ValeurCmp = 10k_NTP;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F494F2D;
+Reference = P1;
+ValeurCmp = NRF;
+IdModule  = pin_array_4x2;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F494EF8;
+Reference = P2;
+ValeurCmp = ISP;
+IdModule  = pin_array_3x2;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4A7BF7;
+Reference = P3;
+ValeurCmp = Water;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
+TimeStamp = /5056446E;
+Reference = P4;
+ValeurCmp = Relay_Out;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C0853;
+Reference = PC2;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C0860;
+Reference = PC3;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C0866;
+Reference = PC4;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C086C;
+Reference = PC5;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C0872;
+Reference = PD1;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C0878;
+Reference = PD3;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C087E;
+Reference = PD4;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C0884;
+Reference = PD5;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4C088A;
+Reference = PD6;
+ValeurCmp = CONN_1;
+IdModule  = 1pin_small;
+EndCmp
+
+BeginCmp
+TimeStamp = /504E8071;
+Reference = Q1;
+ValeurCmp = BC818-40;
+IdModule  = SOT23;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F497334;
+Reference = R1;
+ValeurCmp = 100k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4A7A77;
+Reference = R2;
+ValeurCmp = 1M;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /505642C4;
+Reference = R3;
+ValeurCmp = 1k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F49768D;
+Reference = SW1;
+ValeurCmp = SPST;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4AAD55;
+Reference = SW2;
+ValeurCmp = SW_PUSH;
+IdModule  = switch-tact-DTSM-5;
+EndCmp
+
+BeginCmp
+TimeStamp = /504E6A75;
+Reference = U1;
+ValeurCmp = TPS769XX;
+IdModule  = SOT23-5;
+EndCmp
+
+EndListe

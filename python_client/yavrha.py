@@ -5,7 +5,7 @@ import json
 import time
 import mosquitto
 
-REFRESH_DELAY = 5
+REFRESH_DELAY = 60
 ACTIVE_NODES = []
 MQTT_TOPIC = "yavrha"
 ser = serial.Serial('/dev/ttyACM0',19200, timeout=.1)
@@ -52,12 +52,18 @@ def Send_Data():
     Node_Data = (ser.read(500))
     Node_Data_string = "[" + Node_Data.decode() +"]"
 #    print(Node_Data_string)
-    Node_Data_Obj = json.loads(Node_Data_string)
 
+    Node_Data_Obj = json.loads(Node_Data_string)
+	
     for item in ACTIVE_NODES:
 #        print(Node_Data_Obj[0]['node'+str(item)])
-        client.publish(MQTT_TOPIC + "/node"+str(item),str(Node_Data_Obj[0]['node'+str(item)]), 1)
-
+        client.publish(MQTT_TOPIC + "/node"+str(item)+"/msg",str(Node_Data_Obj[0]['node'+str(item)]), 1)
+        client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1)
+        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data0",str(Node_Data_Obj[0]['node'+str(item)]['data0']), 1)
+        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data1",str(Node_Data_Obj[0]['node'+str(item)]['data1']), 1)
+        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data2",str(Node_Data_Obj[0]['node'+str(item)]['data2']), 1)
+        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data3",str(Node_Data_Obj[0]['node'+str(item)]['data3']), 1)
+		
 def Received_Cmd(msg):
     Node = str(msg.topic).lstrip(MQTT_TOPIC+'/').rstrip("/cmd").strip("node")
     command = bytes("send "+Node+" "+msg.payload.decode()+" \r\n","utf-8")
