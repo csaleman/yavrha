@@ -53,8 +53,12 @@ def Send_Data():
     Node_Data_string = "[" + Node_Data.decode() +"]"
 #    print(Node_Data_string)
 
-    Node_Data_Obj = json.loads(Node_Data_string)
-	
+    try:    
+        Node_Data_Obj = json.loads(Node_Data_string)
+    except ValueError:
+        print("Value Error with json.loads(Node_Data_string)")
+        return 0
+
     for item in ACTIVE_NODES:
 #        print(Node_Data_Obj[0]['node'+str(item)])
         client.publish(MQTT_TOPIC + "/node"+str(item)+"/msg",str(Node_Data_Obj[0]['node'+str(item)]), 1)

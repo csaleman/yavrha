@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by PcbNew date = Sat 22 Sep 2012 20:19:07 EDT
+Cmp-Mod V01 Created by CvPcb (2011-nov-30)-testing date = Thu 18 Oct 2012 10:12:18 EDT
 
 BeginCmp
 TimeStamp = /4F4989EE;
@@ -18,14 +18,14 @@ BeginCmp
 TimeStamp = /50564A16;
 Reference = C2;
 ValeurCmp = .1uF;
-IdModule  = SM0805;
+IdModule  = SM0603;
 EndCmp
 
 BeginCmp
 TimeStamp = /5056481C;
 Reference = C3;
 ValeurCmp = .1uF;
-IdModule  = SM0805;
+IdModule  = SM0603;
 EndCmp
 
 BeginCmp
@@ -52,7 +52,7 @@ EndCmp
 BeginCmp
 TimeStamp = /4F497325;
 Reference = NTC1;
-ValeurCmp = 10k_NTP;
+ValeurCmp = NTP;
 IdModule  = SM0805;
 EndCmp
 
@@ -71,16 +71,9 @@ IdModule  = pin_array_3x2;
 EndCmp
 
 BeginCmp
-TimeStamp = /4F4A7BF7;
-Reference = P3;
-ValeurCmp = Water;
-IdModule  = PIN_ARRAY_2X1;
-EndCmp
-
-BeginCmp
 TimeStamp = /5056446E;
 Reference = P4;
-ValeurCmp = Relay_Out;
+ValeurCmp = Relay;
 IdModule  = PIN_ARRAY_2X1;
 EndCmp
 
@@ -148,6 +141,13 @@ IdModule  = 1pin_small;
 EndCmp
 
 BeginCmp
+TimeStamp = /50800EFF;
+Reference = PW1;
+ValeurCmp = Power;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
 TimeStamp = /504E8071;
 Reference = Q1;
 ValeurCmp = BC818-40;
@@ -178,7 +178,7 @@ EndCmp
 BeginCmp
 TimeStamp = /4F49768D;
 Reference = SW1;
-ValeurCmp = SPST;
+ValeurCmp = SW;
 IdModule  = PIN_ARRAY_2X1;
 EndCmp
 
@@ -192,8 +192,15 @@ EndCmp
 BeginCmp
 TimeStamp = /504E6A75;
 Reference = U1;
-ValeurCmp = TPS769XX;
+ValeurCmp = REG;
 IdModule  = SOT23-5;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F4A7BF7;
+Reference = WD1;
+ValeurCmp = WD;
+IdModule  = PIN_ARRAY_2X1;
 EndCmp
 
 EndListe
