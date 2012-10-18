@@ -566,7 +566,9 @@ void reset_radio(){
 }
 
 
-// Save received data in global variable NodesData after interrupt
+/* Save received data in global variable NodesData after interrupt
+	{NODE#, MSGID#, DATA3, DATA2, DATA1, DATA0}
+*/
 void Save_RadioData(void){
 	
 	uint8_t i;
@@ -579,7 +581,6 @@ void Save_RadioData(void){
 		NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
 		
 	}
-	
 	
 }
 

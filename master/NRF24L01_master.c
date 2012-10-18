@@ -198,8 +198,10 @@ uint8_t nrf_send_completed()
 }
 
 
-/*	Read received data from NRF radio				*/
-/*	return the pipe # from where data was received. */
+/*	Read received data from NRF radio
+	return the pipe # from where data was received. 
+	{NODE#, MSGID#, DATA3, DATA2, DATA1, DATA0}
+*/
 uint8_t nrf_read_payload(void) 
 
 {
@@ -357,13 +359,12 @@ void nrf_TXnodeCfg(uint8_t tx_ch, uint8_t * tx_addr)
 //************************* Send Data to remote Node *************************//
 /* This funtion send the data to a RX node, it most be call right after nrf_TXnodeCfg()
 // only argument is a pointer with the data array, return 1 if data was received by node, 
-2 MAX_RT "no received", or 0 either yet.
+2 MAX_RT "no received".
 */
 uint8_t send_node_data(uint8_t * node_data)
 {
 	uint8_t send_result;	// to store send result
 	uint8_t i;
-	uint8_t status_reg;
 	
 	CE_LOW		// Put radio is in standby;
 

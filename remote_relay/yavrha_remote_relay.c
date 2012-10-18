@@ -23,7 +23,7 @@ uint8_t CONFIG_FLAG;
 // This example only use DATA0
 uint8_t DATA0, DATA1, DATA2, DATA3;
 // MSGID to send in txmode, received MSGID, received node number
-uint8_t MSGID, RECV_MSGID, RECV_NODE_NUMBER;
+uint8_t MSGID, RECV_MSGID;
 
 // Function Prototypes
 void relay_action(void);
@@ -47,6 +47,7 @@ void wdt_init(void)
     return;
 }
 
+// This is the interrupt asserted after receiving a package
 
 ISR(INT0_vect) {
 	
@@ -93,11 +94,6 @@ ISR(TIMER1_COMPA_vect)
 }
 
 void relay_action() {
-	
-	// validate node number
-	if (NODE_NUMBER == RECV_NODE_NUMBER)
-	{
-	
 		
 		if (DATA0 == 1)
 		{
@@ -107,8 +103,7 @@ void relay_action() {
 		else
 		{
 			PORTB &= ~(1<<PIN7);
-		}
-	}	
+		}	
 }
 
 
@@ -132,6 +127,7 @@ int main(void)
 	EIMSK |= (1<<INT0);
    
    // Take NODE number from EEPROM to ram
+   // This is to validate the incoming data
    NODE_NUMBER = eeprom_read_byte(&eeNODE_NUMBER);
    
    // The relay will report its status every 10s

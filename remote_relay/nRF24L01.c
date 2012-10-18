@@ -317,13 +317,16 @@ void nrf_read_payload(void)
 	// clear status register flag IRQ, write 1 to clear bit.
 	nrf_config_register(STATUS,(1<<RX_DR) | (1<<TX_DS) | (1<<MAX_RT)); 
 	
-	DATA0 = buffer[0];
-	DATA1 = buffer[1];
-	DATA2 = buffer[2];
-	DATA3 = buffer[3];
-	RECV_MSGID = buffer[4];
-	RECV_NODE_NUMBER = buffer[5];
 	
+	// Verify the the Received Node Number before accepting the data.
+
+	if (NODE_NUMBER == buffer[5]){
+		DATA0 = buffer[0];
+		DATA1 = buffer[1];
+		DATA2 = buffer[2];
+		DATA3 = buffer[3];
+		RECV_MSGID = buffer[4];
+	}
 }
 
 void nrf_read_cfg_payload(void) 
