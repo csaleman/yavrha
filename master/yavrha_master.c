@@ -20,20 +20,20 @@
 #include "yavrha.h"
 
 const char help_string[] PROGMEM = \
-"stop \t\t\tstop debug continue output\n\
-start \t\t\tstart debug continue output\n\
-cfg_ch \t\t\t{0-83}\n\
-cfg_home_addr\t\t{0-255},{0-255},{0-255},{0-255}\n\
-enable_node \t\t{node#} {0-1}\n\
-cfg_node_addr \t\t{node#} {0-255}\n\
-cfg_node_name \t\t{node#} [10]\n\
-cfg_node_type \t\t{0-5} {0-255}\n\
-print_cfg \t\tPrint the configuration JSON\n\
-reset \t\t\treset master configuration\n\
-send_cfg \t\t{node#}\n\
-get \t\t\tPrint JSON active nodes\n\
-send \t\t\t{node#}, {0-255}, {0-255}, {0-255}, {0-255}\n\
-help \t\t\tprint this help\n";
+"stop \t\t\tstop debug continue output\r\n\
+start \t\t\tstart debug continue output\r\n\
+cfg_ch \t\t\t{0-83}\r\n\
+cfg_home_addr\t\t{0-255},{0-255},{0-255},{0-255}\r\n\
+enable_node \t\t{node#} {0-1}\r\n\
+cfg_node_addr \t\t{node#} {0-255}\r\n\
+cfg_node_name \t\t{node#} [10]\r\n\
+cfg_node_type \t\t{0-5} {0-255}\r\n\
+print_cfg \t\tPrint the configuration JSON\r\n\
+reset \t\t\treset master configuration\r\n\
+send_cfg \t\t{node#}\r\n\
+get \t\t\tPrint JSON active nodes\r\n\
+send \t\t\t{node#}, {0-255}, {0-255}, {0-255}, {0-255}\r\n\
+help \t\t\tprint this help\r\n";
 
 /* Function Prototypes: */
 	void SetupHardware(void);
@@ -199,7 +199,7 @@ void Cmd_Handler( char *CmdBuff) {
 					//  Stop Printing data continuously.
 					if(strcmp(token,"stop")== 0) {
 						PRINT_FLAG = 0;
-						fprintf(&USBSerialStream, "stoped\n");
+						fprintf(&USBSerialStream, "stoped\r\n");
 								
 						}
 						
@@ -207,7 +207,7 @@ void Cmd_Handler( char *CmdBuff) {
 					else if(strcmp(token,"start")== 0) 	{
 								
 						PRINT_FLAG = 1;
-						fprintf(&USBSerialStream, "started\n");
+						fprintf(&USBSerialStream, "started\r\n");
 						}							 
 /* ******************************************************** */					
 					//	Store Radio Channel in eeprom.
@@ -225,7 +225,7 @@ void Cmd_Handler( char *CmdBuff) {
 										//reconfigure radio.
 										nrf_config();
 										
-										fprintf(&USBSerialStream, "Home Channel: %i \n",temp);
+										fprintf(&USBSerialStream, "Home Channel: %i \r\n",temp);
 									}	
 										
 							}								
@@ -251,12 +251,12 @@ void Cmd_Handler( char *CmdBuff) {
 							}				
 							//reconfigure radio.
 										nrf_config();
-										fprintf(&USBSerialStream, "\nHome Address");
+										fprintf(&USBSerialStream, "\r\nHome Address");
 										for(i=0; i<5; i++){
 											fprintf(&USBSerialStream, ":%i",eeprom_read_byte((uint8_t *)&eeNRF_ADDRESS+i));
 											
 										}
-									fprintf(&USBSerialStream, " \n");	
+									fprintf(&USBSerialStream, " \r\n");	
 						}						
 /* ******************************************************** */							
 						//	Enable Node.
@@ -271,7 +271,7 @@ void Cmd_Handler( char *CmdBuff) {
 									{
 										Nodes[temp].NodeEnable = 1;	
 										NodeStrucToEeprom();
-										fprintf(&USBSerialStream, "node enabled: %i\n",temp);
+										fprintf(&USBSerialStream, "node enabled: %i\r\n",temp);
 										nrf_config();								
 									
 									}
@@ -290,7 +290,7 @@ void Cmd_Handler( char *CmdBuff) {
 									{
 										Nodes[temp].NodeEnable = 0;	
 										NodeStrucToEeprom();
-										fprintf(&USBSerialStream, "node disabled: %i\n",temp);
+										fprintf(&USBSerialStream, "node disabled: %i\r\n",temp);
 										nrf_config();								
 									
 									}
@@ -313,7 +313,7 @@ void Cmd_Handler( char *CmdBuff) {
 											if ((token = strtok(NULL,delimiter)))	{
 													strlcpy(Nodes[temp].NodeName,token,sizeof(Nodes[temp].NodeName));	
 													NodeStrucToEeprom();
-													fprintf(&USBSerialStream, "node name: %i %s \n",temp, Nodes[temp].NodeName);
+													fprintf(&USBSerialStream, "node name: %i %s \r\n",temp, Nodes[temp].NodeName);
 																							
 											}								
 									
@@ -342,7 +342,7 @@ void Cmd_Handler( char *CmdBuff) {
 										
 														Nodes[temp].NodeAddr = temp1;	
 														NodeStrucToEeprom();
-														fprintf(&USBSerialStream, "node address: %i %i\n",temp,temp1);
+														fprintf(&USBSerialStream, "node address: %i %i\r\n",temp,temp1);
 														nrf_config();
 													
 													}													
@@ -374,7 +374,7 @@ void Cmd_Handler( char *CmdBuff) {
 										
 														Nodes[temp].NodeType = temp1;	
 														NodeStrucToEeprom();
-														fprintf(&USBSerialStream, "node type: %i %i\n",temp,temp1);
+														fprintf(&USBSerialStream, "node type: %i %i\r\n",temp,temp1);
 														nrf_config();
 													
 													}													
@@ -459,11 +459,11 @@ void Cmd_Handler( char *CmdBuff) {
 											// Send Data to Node X
 											if(send_node_data(msg_to_send) == 1) 		
 												{
-													fprintf(&USBSerialStream, "Data Sent Successfully\n");
+													fprintf(&USBSerialStream, "Data Sent Successfully\r\n");
 												}
 											else {
 											
-													fprintf(&USBSerialStream, "Data Sent Failed\n");
+													fprintf(&USBSerialStream, "Data Sent Failed\r\n");
 												}
 										nrf_config();				// Return radio to RX mode
 									}
@@ -490,11 +490,11 @@ void Cmd_Handler( char *CmdBuff) {
 											// Send configuration to Node X
 											if(send_node_cfg(temp) == 1) 		
 												{
-													fprintf(&USBSerialStream, "Configuration Sent Successfully\n");
+													fprintf(&USBSerialStream, "Configuration Sent Successfully\r\n");
 												}
 											else {
 											
-													fprintf(&USBSerialStream, "Configuration Sent Failed\n");
+													fprintf(&USBSerialStream, "Configuration Sent Failed\r\n");
 												}
 										nrf_config();				// Return radio to RX mode
 									}
@@ -532,18 +532,18 @@ void print_cfg() {
 	eeprom_read_block((void *)&ram_NRF_ADDR, (const void *)&eeNRF_ADDRESS,5);
 
 	
-	fprintf(&USBSerialStream, "{\"channel\":%i,\"home_addr\":[%i, %i, %i, %i],\n",channel,ram_NRF_ADDR[0],ram_NRF_ADDR[1],ram_NRF_ADDR[2],ram_NRF_ADDR[3]);
+	fprintf(&USBSerialStream, "{\"channel\":%i,\"home_addr\":[%i, %i, %i, %i],\r\n",channel,ram_NRF_ADDR[0],ram_NRF_ADDR[1],ram_NRF_ADDR[2],ram_NRF_ADDR[3]);
 	
 	for (i=0;i<MAXSNODES -1;i++)
 	{
-	fprintf(&USBSerialStream, "\"node%i\": {\"number\":%i, \"enable\":%i, \"address\":%i, \"name\":\"%s\", \"type\":%i},\n",
+	fprintf(&USBSerialStream, "\"node%i\": {\"number\":%i, \"enable\":%i, \"address\":%i, \"name\":\"%s\", \"type\":%i},\r\n",
 				i, Nodes[i].Node_Number, Nodes[i].NodeEnable,Nodes[i].NodeAddr,Nodes[i].NodeName,Nodes[i].NodeType);	
 	}
 	// Last node without trailing comma
-	fprintf(&USBSerialStream, "\"node%i\": {\"number\":%i, \"enable\":%i, \"address\":%i, \"name\":\"%s\", \"type\":%i}\n",
+	fprintf(&USBSerialStream, "\"node%i\": {\"number\":%i, \"enable\":%i, \"address\":%i, \"name\":\"%s\", \"type\":%i}\r\n",
 			MAXSNODES-1, Nodes[MAXSNODES-1].Node_Number, Nodes[MAXSNODES-1].NodeEnable, Nodes[MAXSNODES-1].NodeAddr, Nodes[MAXSNODES-1].NodeName, Nodes[MAXSNODES-1].NodeType);	
 	
-	fprintf(&USBSerialStream,"}\n");
+	fprintf(&USBSerialStream,"}\r\n");
 	
 }
 // Reset or initialize radio values in Nodes structure.
@@ -590,7 +590,7 @@ void Print_RadioData(void) {
 		uint8_t i, k;
 		uint8_t firstitem = 0;
 	
-	fprintf(&USBSerialStream,"{ \n");
+	fprintf(&USBSerialStream,"{ \r\n");
 	for (i = 0; i < MAXSNODES; i++){
 		
 		if (Nodes[i].NodeEnable == 1)
@@ -604,7 +604,7 @@ void Print_RadioData(void) {
 				firstitem =1;	
 				}
 			// following elements with comma in front	
-			else fprintf(&USBSerialStream,", \n\"node%i\": {",i);
+			else fprintf(&USBSerialStream,", \r\n\"node%i\": {",i);
 			
 			// print node number, reduntant.
 			//fprintf(&USBSerialStream,"\"node\":%i, ", NodesData[i][PAYLOAD_WIDTH - 1]);
@@ -623,7 +623,7 @@ void Print_RadioData(void) {
 		
 		
 	}		
-	fprintf(&USBSerialStream,"\n }\n");
+	fprintf(&USBSerialStream,"\r\n }\r\n");
 	
 }
 

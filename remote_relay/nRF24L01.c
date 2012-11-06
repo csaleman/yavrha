@@ -12,7 +12,7 @@ uint8_t EEMEM eeNRF_ADDRESS[5];
 uint8_t NODE_NUMBER;
 // Function Prototypes
 
-void spi_init();
+void spi_init(void);
 void spi_transfer_sync (uint8_t *, uint8_t *, uint8_t);
 void spi_transmit_sync (uint8_t *, uint8_t);
 uint8_t spi_fast_shift (uint8_t);
@@ -23,9 +23,10 @@ void nrf_send(uint8_t *);
 void remote_nrf_config(void);
 void nrf_read_payload(void); 
 void remote_cfg_toEEPROM(uint8_t *);
-void nrf_tx_config();
-void nrf_rx_config();
+void nrf_tx_config(void);
+void nrf_rx_config(void);
 void nrf_read_cfg_payload(void);
+uint8_t nrf_send_completed(void);
 
 // ************************************************************************************************ //
 	//ISP Functions
@@ -327,7 +328,25 @@ void nrf_read_payload(void)
 		DATA3 = buffer[3];
 		RECV_MSGID = buffer[4];
 	}
+	// Else forward the message	
+	else {
+		// short delay to avoid collitions		
+		_delay_loop_2(NODE_NUMBER * 100);
+
+		// configure radio in TX
+		nrf_tx_config();
+
+		// send package
+		nrf_send(buffer);
+
+		// configure radio as rx again.
+		nrf_rx_config();
+
+	}
+
 }
+
+
 
 void nrf_read_cfg_payload(void) 
 // Sends a data package to the default address. Be sure to send the correct
