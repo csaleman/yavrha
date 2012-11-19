@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+# This code connect to a serial port and send data to a MQTT server
+
 import serial
 import json
 import time
 import mosquitto
 
-REFRESH_DELAY = 60
+REFRESH_DELAY = 5   # in seconds
 ACTIVE_NODES = []
-MQTT_TOPIC = "yavrha"
+MQTT_TOPIC = "yavrha"	
 ser = serial.Serial('/dev/ttyACM0',19200, timeout=.1)
 
 
@@ -17,9 +19,11 @@ client.connect("test.mosquitto.org")
 
 # Load Node Configuration
 command = bytes("print_cfg \r\n","utf-8")
-ser.flushInput()    # make sure input buffer is empty
+# make sure input buffer is empty
+ser.flushInput()
 ser.write(command)
-ser.readline()          # read with the intention of delete the command sent
+# read with the intention of delete the command sent
+ser.readline()
 Node_Cfg = (ser.read(1000))
 Node_Cfg_string = "[" + Node_Cfg.decode() +"]"
 #print(Node_Cfg_string,"\n******\n")
