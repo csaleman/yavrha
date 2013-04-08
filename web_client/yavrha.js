@@ -14,7 +14,6 @@
 //				"type":"1",
 //				"address":"230",
 //				"number":"1",
-//				"msg":"{'msgid': 83, 'data1': 1, 'data0': 19, 'data3': 0, 'data2': 0}",
 //				"msgid":"83",
 //				"data0":"19",
 //				"data1":"1",

@@ -146,7 +146,7 @@ def on_message(mosq, obj, msg):
     Received_Cmd(msg)
 
 
-# Subscribe to all the nodes cmd.
+# Subscribe to nodes/cmd.
 client.subscribe(MQTT_TOPIC+"/+/cmd", 0)
 
 # Set Call back functions
