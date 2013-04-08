@@ -8,7 +8,7 @@ import time
 import mosquitto
 
 # Global Variables
-REFRESH_DELAY = 1   # in seconds
+REFRESH_DELAY = 30   # in seconds
 ACTIVE_NODES = []
 NODES = {}          # Nested Dictionary in {"node1":{"name":"blabla", "type":1, etc.}, "node2":{"name":"blabla", etc...
 MQTT_SERVER = "test.mosquitto.org"
@@ -72,8 +72,9 @@ while 'node'+str(i) in Node_Cfg_Obj[0]:
 
 # ********************************************************
 # Get data from serial port and publish it in MQTT Server
+# Argument "forced", force to publish everything even if it hasn't change
 # ********************************************************
-def Send_Data():
+def Send_Data(forced):
     ser.flushInput()    # make sure input buffer is empty
     command = bytes("get \r\n","utf-8")
     ser.write(command)
@@ -91,7 +92,7 @@ def Send_Data():
 
     for item in ACTIVE_NODES:
 
-# This check if the key exist in the object if not it create the key, this is avoid error in the following if
+# This check if the key exist in the object if not it create the key, this is to avoid error in the following if
         if 'msgid' not in  NODES['node'+str(item)]:
             NODES['node'+str(item)]["msgid"] = " "
 
@@ -110,23 +111,23 @@ def Send_Data():
 # Load new data in NODES object
 # Check if new data is different that old one, if so it update the value in the NODES object and publish the value.
 
-        if NODES['node'+str(item)]["msgid"] != str(Node_Data_Obj[0]['node'+str(item)]['msgid']):
+        if NODES['node'+str(item)]["msgid"] != str(Node_Data_Obj[0]['node'+str(item)]['msgid'] or forced ):
             NODES['node'+str(item)]["msgid"] = str(Node_Data_Obj[0]['node'+str(item)]['msgid'])
             client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1)
         
-        if NODES['node'+str(item)]["data0"] != str(Node_Data_Obj[0]['node'+str(item)]['data0']): 
+        if NODES['node'+str(item)]["data0"] != str(Node_Data_Obj[0]['node'+str(item)]['data0'] or forced ): 
             NODES['node'+str(item)]["data0"] = str(Node_Data_Obj[0]['node'+str(item)]['data0'])
             client.publish(MQTT_TOPIC + "/node"+str(item)+"/data0",str(Node_Data_Obj[0]['node'+str(item)]['data0']), 1)
 
-        if NODES['node'+str(item)]["data1"] != str(Node_Data_Obj[0]['node'+str(item)]['data1']): 
+        if NODES['node'+str(item)]["data1"] != str(Node_Data_Obj[0]['node'+str(item)]['data1'] or forced ): 
             NODES['node'+str(item)]["data1"] = str(Node_Data_Obj[0]['node'+str(item)]['data1'])
             client.publish(MQTT_TOPIC + "/node"+str(item)+"/data1",str(Node_Data_Obj[0]['node'+str(item)]['data1']), 1)
 
-        if NODES['node'+str(item)]["data2"] != str(Node_Data_Obj[0]['node'+str(item)]['data2']): 
+        if NODES['node'+str(item)]["data2"] != str(Node_Data_Obj[0]['node'+str(item)]['data2'] or forced ): 
             NODES['node'+str(item)]["data2"] = str(Node_Data_Obj[0]['node'+str(item)]['data2'])
             client.publish(MQTT_TOPIC + "/node"+str(item)+"/data2",str(Node_Data_Obj[0]['node'+str(item)]['data2']), 1)
 
-        if NODES['node'+str(item)]["data3"] != str(Node_Data_Obj[0]['node'+str(item)]['data3']): 
+        if NODES['node'+str(item)]["data3"] != str(Node_Data_Obj[0]['node'+str(item)]['data3'] or forced ): 
             NODES['node'+str(item)]["data3"] = str(Node_Data_Obj[0]['node'+str(item)]['data3'])
             client.publish(MQTT_TOPIC + "/node"+str(item)+"/data3",str(Node_Data_Obj[0]['node'+str(item)]['data3']), 1)
 
@@ -157,8 +158,9 @@ client.on_message = on_message
 # Main Loop 
 while True:
     start_time = int(time.time())
-    Send_Data()
+    Send_Data(1)
 # Inner loop to call mosquitto client in order to keep connection alive.
     while (int(time.time()) < start_time + REFRESH_DELAY):
+        Send_Data(0)
         client.loop()
         
