@@ -3,7 +3,9 @@
 	var localStorageKey2 = "MosquittoTopic";
  	var localStorageKey3 = "MosquittoServerUser";
 	var localStorageKey4 = "MosquittoServerPassword";
-	var TOPIC = "";
+	var TOPIC = "";        // Used to store TOPIC
+    var NodesObj = {};     // Main object where nodes data is stored
+    var OldMSGID = new Array();   // Array used to store previous MSGID, this is used to avoid to refresh switch etc, back with old information after manual change.
 
 // Mosquitto Object
 	var t = new Mosquitto();
@@ -21,7 +23,7 @@
 //				"data3":"0" }
 //	"node2": { etc .. .. 
 
-	var NodesObj = {};
+	
 
 //********************************************************
 // 		This is the function that initiate jquery.
@@ -99,6 +101,7 @@ function MosquittoSetup(server,topic)
 // This function is a callback from the mosquitto instance
 //********************************************************
 function StoreMsg(Topic, Payload, qos, retain){
+    
 
 //  alert(topic);
 	SubMsg = document.getElementById('SubMsg');
@@ -121,9 +124,19 @@ function StoreMsg(Topic, Payload, qos, retain){
 	else {
 		
 //		Save the value "Payload" in the property "MsgName" for a given Node
-		NodesObj[NodeNumber][MsgName] = Payload;
-		
-	}
+            
+            if (MsgName == "msgid") {
+                
+                OldMSGID[NodeNumber] = NodesObj[NodeNumber]["msgid"] ;   
+	        }
+
+            NodesObj[NodeNumber][MsgName] = Payload;
+
+    }
+
+    
+
+
 
 //	If message is "Number" which is the last configuration message sent by the python client call the PaintScreen function.
 
@@ -131,11 +144,12 @@ function StoreMsg(Topic, Payload, qos, retain){
 		
 		PaintScreen();
 	}
-	
-		UpdateValues();
+            
+        UpdateValues();
 
+       
 	 //DebugWindow.value = JSON.stringify(NodesObj);
-	 console.log(NodesObj);	
+	 //console.log(NodesObj);	
 
 }
 
@@ -149,9 +163,9 @@ function PaintScreen()
 //		Print a debug text area       
 //		$('ul#MainUl').append('<li data-role="list-divider">Debug Window</li><li> <textarea rows="5" cols="25" id="DebugWindow"></textarea>');
 
-	for (var key in NodesObj) {
+	for (var NodeNumber in NodesObj) {
 
-		Node = NodesObj[key];
+		Node = NodesObj[NodeNumber];
 		
 		if (Node["type"] > 127) {
 			
@@ -159,10 +173,10 @@ function PaintScreen()
 				
 				case 128:
 					$('ul#MainUl').append('<li data-role="list-divider">Switch ' + Node["name"] + ' </li>');
-			 		$('ul#MainUl').append('<li><select name="node'+ Node["number"] + '" id="node'+ Node["number"] + '" data-role="slider"> \
+			 		$('ul#MainUl').append('<li><select name="node'+ Node["number"] + '" id="node'+ Node["number"] + '" data-role="slider" data-mini="true"> \
 										<option value="0">Off</option> <option value="1">On \
 										</option> </select></li>');
-					$('#node'+ Node["number"] ).on( 'slidestop', function( event ) { PostMessage($(this).attr('id') ,$(this).attr('value')); });
+					$('#node'+ Node["number"] ).on( 'slidestop', function( event ) { PostSwitchMessage($(this).attr('id') ,$(this).attr('value')); });
 					break;
 				case 129:
 					$('ul#MainUl').append('<li data-role="list-divider">Dimmer ' + Node["name"] + ' </li>');
@@ -178,9 +192,9 @@ function PaintScreen()
 		} 
 	}
 		
-	for (var key in NodesObj) {
+	for (var NodeNumber in NodesObj) {
 		
-		Node = NodesObj[key];
+		Node = NodesObj[NodeNumber];
 		
 		if (Node["type"] < 128) {
 			
@@ -218,9 +232,9 @@ function PaintScreen()
 //********************************************************
 function UpdateValues(){
 
-		for (var key in NodesObj) {
+		for (var NodeNumber in NodesObj) {
 						
-			Node = NodesObj[key];
+			Node = NodesObj[NodeNumber];
 
 			switch (parseInt(Node["type"])){
 				
@@ -228,7 +242,7 @@ function UpdateValues(){
 					var sign = (Node["data1"] = 1) ? "" : "-";
 					var tempC = parseInt(sign + Node["data0"] );
 					var tempF = Math.round((tempC*1.8)+32);
-					$('#'+key).text(tempC + "  \u00B0C ( " + tempF + " \u00B0F )"  );	
+					$('#'+NodeNumber).text(tempC + "  \u00B0C ( " + tempF + " \u00B0F )"  );	
 					break;
 				case 2:
 					
@@ -237,9 +251,13 @@ function UpdateValues(){
 					
 					break;
 				case 128:
-					$('#'+key).val(Node["data0"]);
-					$('#'+key).slider("refresh");
-					//alert(key + ":" + Node["data0"]);
+                    if(OldMSGID[NodeNumber] != Node["msgid"]) {			
+                        OldMSGID[NodeNumber] = Node["msgid"];
+                        $('#'+NodeNumber).val(Node["data0"]).slider("refresh");
+                        console.log(OldMSGID[NodeNumber] +" : "+Node["msgid"]);                
+    
+                       // console.log("UpdateValue: " + NodeNumber + " : " + $('#'+NodeNumber).val());
+                        }
 					break;
 				case 129:
 					
@@ -257,7 +275,7 @@ function UpdateValues(){
 //********************************************************
 // Function to Post Messages back to MQTT server
 //********************************************************
-function PostMessage(Node, PostVal)
+function PostSwitchMessage(Node, PostVal)
 {
    postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
    t.publish(postTopic, PostVal,0,0);

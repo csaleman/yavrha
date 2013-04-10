@@ -8,7 +8,7 @@ import time
 import mosquitto
 
 # Global Variables
-REFRESH_DELAY = 10           # Delay in seconds to send new values only
+REFRESH_DELAY = 5           # Delay in seconds to send new values only
 FULL_REFRESH_DELAY = 10     # Will send all the configuration in REFRESH_DELAY * FULL_REFRESH_DELAY seconds
 ACTIVE_NODES = []
 NODES = {}          # Nested Dictionary in {"node1":{"name":"blabla", "type":1, etc.}, "node2":{"name":"blabla", etc...
