@@ -5,7 +5,7 @@
 	var localStorageKey4 = "MosquittoServerPassword";
 	var TOPIC = "";        // Used to store TOPIC
     var NodesObj = {};     // Main object where nodes data is stored
-    var OldMSGID = new Array();   // Array used to store previous MSGID, this is used to avoid to refresh switch etc, back with old information after manual change.
+    var OldMSGID = [];   // Array used to store previous MSGID, this is used to avoid to refresh switch etc, back with old information after user change it change.
 
 // Mosquitto Object
 	var t = new Mosquitto();
@@ -124,11 +124,6 @@ function StoreMsg(Topic, Payload, qos, retain){
 	else {
 		
 //		Save the value "Payload" in the property "MsgName" for a given Node
-            
-            if (MsgName == "msgid") {
-                
-                OldMSGID[NodeNumber] = NodesObj[NodeNumber]["msgid"] ;   
-	        }
 
             NodesObj[NodeNumber][MsgName] = Payload;
 
@@ -251,12 +246,21 @@ function UpdateValues(){
 					
 					break;
 				case 128:
-                    if(OldMSGID[NodeNumber] != Node["msgid"]) {			
-                        OldMSGID[NodeNumber] = Node["msgid"];
+                    // Only refresh data if the MSGID is new.
+                    // This is important to keep the slider steady in OFF or ON after a user change it status.                    
+                        // this first if, just initialize the first time.
+                        if (typeof OldMSGID[NodeNumber] == 'undefined' && typeof Node["msgid"] != 'undefined' ){
+                                OldMSGID[NodeNumber] = parseInt(Node["msgid"]) -1 ;
+                                console.log(OldMSGID[NodeNumber]);
+                                console.log(Node["msgid"]);
+                            }
+                        console.log("Node msgid: " + Node["msgid"]);
+                        console.log("Old msgid: " + OldMSGID[NodeNumber]);
+                        if(OldMSGID[NodeNumber] < Node["msgid"]) {			
+                        OldMSGID[NodeNumber] = parseInt(Node["msgid"]);
+                    // This command assign a new value to the widget and refresh it.                        
                         $('#'+NodeNumber).val(Node["data0"]).slider("refresh");
-                        console.log(OldMSGID[NodeNumber] +" : "+Node["msgid"]);                
-    
-                       // console.log("UpdateValue: " + NodeNumber + " : " + $('#'+NodeNumber).val());
+
                         }
 					break;
 				case 129:
@@ -277,8 +281,14 @@ function UpdateValues(){
 //********************************************************
 function PostSwitchMessage(Node, PostVal)
 {
-   postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
-   t.publish(postTopic, PostVal,0,0);
+// Increment OldMSGID by 2, which means do not use the next X messages, this is to keep the slider steady in position after a user update    
+    OldMSGID[NodeNumber]  =  parseInt(OldMSGID[NodeNumber]) + 2;
+
+    if (OldMSGID[NodeNumber] > 254) {
+        OldMSGID[NodeNumber] = 0
+    }    
+    postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
+    t.publish(postTopic, PostVal,0,0);
 
 	//alert(postTopic);
 }
