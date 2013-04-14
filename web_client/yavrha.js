@@ -251,11 +251,8 @@ function UpdateValues(){
                         // this first if, just initialize the first time.
                         if (typeof OldMSGID[NodeNumber] == 'undefined' && typeof Node["msgid"] != 'undefined' ){
                                 OldMSGID[NodeNumber] = parseInt(Node["msgid"]) -1 ;
-                                console.log(OldMSGID[NodeNumber]);
-                                console.log(Node["msgid"]);
                             }
-                        console.log("Node msgid: " + Node["msgid"]);
-                        console.log("Old msgid: " + OldMSGID[NodeNumber]);
+     
                         if(OldMSGID[NodeNumber] < Node["msgid"]) {			
                         OldMSGID[NodeNumber] = parseInt(Node["msgid"]);
                     // This command assign a new value to the widget and refresh it.                        
