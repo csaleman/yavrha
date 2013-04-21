@@ -25,8 +25,8 @@
 */ 
 
 
-#ifndef YAVRHA_REMOTE_RELAY_H_
-#define YAVRHA_REMOTE_RELAY_H_
+#ifndef YAVRHA_LED_DIMMER_H_
+#define YAVRHA_LED_DIMMER_H_
 
 
 #include <avr/interrupt.h>
@@ -131,4 +131,4 @@ __asm__ __volatile__ (  \
 
 
 
-#endif /* YAVRHA_TEMP_SENDER_H_ */
+#endif /* YAVRHA_LED_DIMMER_H_ */

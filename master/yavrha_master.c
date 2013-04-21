@@ -46,7 +46,8 @@ const char help_string[] PROGMEM = \
 start \t\t\tstart debug continue output\r\n\
 cfg_ch \t\t\t{0-83}\r\n\
 cfg_home_addr\t\t{0-255},{0-255},{0-255},{0-255}\r\n\
-enable_node \t\t{node#} {0-1}\r\n\
+enable \t\t\t{node#} enable node\r\n\
+disable \t\t\t{node#} disable node\r\n\
 cfg_node_addr \t\t{node#} {0-255}\r\n\
 cfg_node_name \t\t{node#} [10]\r\n\
 cfg_node_type \t\t{0-5} {0-255}\r\n\

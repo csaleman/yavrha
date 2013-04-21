@@ -23,7 +23,7 @@
     along with Yavrha.  If not, see <http://www.gnu.org/licenses/>.
 
 */ 
-#include "yavrha_remote_relay.h"
+#include "yavrha_LED_Dimmer.h"
 
 uint8_t EEMEM CH;
 uint8_t EEMEM eeNODE_NUMBER;

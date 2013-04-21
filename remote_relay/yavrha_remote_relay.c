@@ -128,7 +128,7 @@ void relay_action() {
 
 int main(void)
 {
-	// Relay output
+    // Relay output
 	DDRB |= (1<<PB7);
 	
 	// Setup ISP
@@ -145,26 +145,34 @@ int main(void)
 	// Enable Radio Interrupt
 	EIMSK |= (1<<INT0);
    
-   // Take NODE number from EEPROM to ram
-   // This is to validate the incoming data
-   NODE_NUMBER = eeprom_read_byte(&eeNODE_NUMBER);
+    // Take NODE number from EEPROM to ram
+    // This is to validate the incoming data
+    NODE_NUMBER = eeprom_read_byte(&eeNODE_NUMBER);
    
-   // The relay will report its status every 10s
-   // Configure Timer/Counter 1 - 16 bits to 10s this assumes clock at 1Mhz
-   TCCR1B |= (1 << WGM22);		// Configure timer 1 for CTC mode
-   /*
-   OCR1A   = 15624;				// Set CTC compare value to 1Hz at 1MHz AVR clock, with a prescaler of 64
-   TCCR1B |= ((1 << CS10) | (1 << CS11)); // Start timer at Fcpu/64
-  */
-   OCR1A   = 9766;					// Set CTC compare value approx 10 sec at 1MHz AVR clock, with a prescaler of 1024
+    // The relay will report its status every 10s
+    // Configure Timer/Counter 1 - 16 bits to 10s this assumes clock at 1Mhz
    
-   // Start timer at Fcpu/256
-   TCCR1B |= ((1 << CS10) | (1 << CS12));
+    // Set CTC compare value approx 10 sec at 1MHz AVR clock, with a prescaler of 1024
+    OCR1A   = 9766;					
+    
+    // Configure timer 1 for CTC mode
+    TCCR1B |= (1 << WGM12);		
    
-   // Enable CTC interrupt
-   TIMSK1 |= (1 << OCIE1A); 
+    /*
+    // Set CTC compare value to 1Hz at 1MHz AVR clock, with a prescaler of 64    
+    OCR1A   = 15624;				
+
+    // Start timer at Fcpu/64
+    TCCR1B |= ((1 << CS10) | (1 << CS11)); 
+    */
    
-   while (1) {
+    // Start timer at Fcpu/1024
+    TCCR1B |= ((1 << CS10) | (1 << CS12));
+   
+    // Enable CTC interrupt
+    TIMSK1 |= (1 << OCIE1A); 
+   
+    while (1) {
       // Waiting for push button
 	  
 		 // If configuration push button is pressed
@@ -190,6 +198,6 @@ int main(void)
 	
 			// Send current status back after timer
 				 				
-   }
+    }
       
 }

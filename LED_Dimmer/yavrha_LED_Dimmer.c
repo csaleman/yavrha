@@ -27,7 +27,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include "yavrha_remote_relay.h"
+#include "yavrha_LED_Dimmer.h"
 
 /* Global Variables */
 /* Buffer is used to load data to be send
@@ -52,13 +52,14 @@ void nrf_read_payload(void);
 void nrf_tx_config(void);
 void nrf_send(uint8_t *);
 void nrf_rx_config(void);
+void pwm_init(void);
 
 //          *** IMPORTANT ***
 // Avoid nasty resets after wdt reset.
 void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
 
 // This interrupt function get call after reset to disable WDT
-// This is critical to avoid infinites reset.
+// This is critical to avoid infinites resets.
 void wdt_init(void)
 {
     MCUSR = 0;
@@ -93,7 +94,6 @@ ISR(TIMER1_COMPA_vect)
 {
 			
 	cli();
-	//PORTB ^= (1<<PIN7); // Toggle the LED
 	// configure radio in TX
 		nrf_tx_config();
 		buffer[0] = DATA0;
@@ -106,30 +106,58 @@ ISR(TIMER1_COMPA_vect)
 	// send package
 		nrf_send(buffer);
 						
-	// configure radio as rx again.
+	// Return radio to rx mode
 		nrf_rx_config();
-	//	TIFR1 = (1 << OCF1A); // clear the CTC flag (writing a logic one to the set flag clears it)
 		sei();	
 	
 }
 
+// This function initialize the 8bit Timer/Counter 0 as a PWM
+
+void pwm_init() {
+
+    // Start timer 0 at Fcpu/64
+//   TCCR0B |= (1 << CS00) | (1 << CS01); 
+
+    // Start timer 0 at Fcpu/8
+    TCCR0B |= (1 << CS01); 
+
+
+    // Configure timer 0 for PWM mode
+    TCCR0A |= (1 << WGM00) | (1 << COM0A1);		
+    
+    // make sure to make OC0A pin (pin PD6 for atmega8 Series)
+    DDRD |= (1<<PD6);
+
+    // Default 50% Duty Cycle for Debugging
+    OCR0A = 127;
+}
+
+// This function change the relay output state and modified the PWM Duty Cycle
 void relay_action() {
 		
 		if (DATA0 == 1)
 		{
-			PORTB |= (1<<PIN7);	
+            // Relay On			
+            PORTB |= (1<<PIN7);	
+            // Change PWM Duty Cycle
+            OCR0A = DATA1;
 		} 
 
 		else
 		{
-			PORTB &= ~(1<<PIN7);
+            // Relay Off			
+            PORTB &= ~(1<<PIN7);
+            // PWM to 0%
+            OCR0A = 0;
+
 		}	
 }
 
 
 int main(void)
 {
-	// Relay output
+    // Relay output
 	DDRB |= (1<<PB7);
 	
 	// Setup ISP
@@ -138,40 +166,51 @@ int main(void)
 	// Configure Push button pull-ups
 	PORTD |= (1 << PD0);
 	
-	sei(); // Enable global interrupts
+    // Enable global interrupts
+    sei();
 	
 	// configure NRF parameters
     nrf_rx_config();
 	
 	// Enable Radio Interrupt
 	EIMSK |= (1<<INT0);
+    
+    // Take NODE number from EEPROM to ram
+    // This is to validate the incoming data
+    NODE_NUMBER = eeprom_read_byte(&eeNODE_NUMBER);
+
+    // Initialize Timer/Counter 0 8bit as PWM
+    pwm_init();
+
+    // The relay will report its status every 10s
+    // Configure Timer/Counter 1 - 16 bits to 10s this assumes clock at 1Mhz    
+
+    // Set CTC compare value approx 10sec at 1MHz AVR clock, with a prescaler of 1024
+    OCR1A   = 9766;	
+        
+    // Configure timer 1 for CTC mode
+    TCCR1B |= (1 << WGM12);		
+    
+    /*
+    // Set CTC compare value to 1Hz at 1MHz AVR clock, with a prescaler of 64    
+    OCR1A   = 15624;
+    // Start timer at Fcpu/64
+    TCCR1B |= ((1 << CS10) | (1 << CS11)); 
+    */
+     
+    // Start timer at Fcpu/1024
+    TCCR1B |= ((1 << CS10) | (1 << CS12));
    
-   // Take NODE number from EEPROM to ram
-   // This is to validate the incoming data
-   NODE_NUMBER = eeprom_read_byte(&eeNODE_NUMBER);
+    // Enable CTC interrupt
+    TIMSK1 |= (1 << OCIE1A); 
    
-   // The relay will report its status every 10s
-   // Configure Timer/Counter 1 - 16 bits to 10s this assumes clock at 1Mhz
-   TCCR1B |= (1 << WGM22);		// Configure timer 1 for CTC mode
-   /*
-   OCR1A   = 15624;				// Set CTC compare value to 1Hz at 1MHz AVR clock, with a prescaler of 64
-   TCCR1B |= ((1 << CS10) | (1 << CS11)); // Start timer at Fcpu/64
-  */
-   OCR1A   = 9766;					// Set CTC compare value approx 10 sec at 1MHz AVR clock, with a prescaler of 1024
-   
-   // Start timer at Fcpu/256
-   TCCR1B |= ((1 << CS10) | (1 << CS12));
-   
-   // Enable CTC interrupt
-   TIMSK1 |= (1 << OCIE1A); 
-   
-   while (1) {
+    while (1) {
       // Waiting for push button
 	  
 		 // If configuration push button is pressed
 		 if (bit_is_clear(PIND,PD0)) {
 			 
-				// Configure radio to receive configuration
+				// Configure radio to receive configuration parameters
 				remote_nrf_config();
 				
 				// Set Configuration Flag
@@ -191,6 +230,6 @@ int main(void)
 	
 			// Send current status back after timer
 				 				
-   }
+    }
       
 }
