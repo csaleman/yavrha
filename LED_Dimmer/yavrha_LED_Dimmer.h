@@ -25,8 +25,8 @@
 */ 
 
 
-#ifndef YAVRHA_TEMP_SENDER_H_
-#define YAVRHA_TEMP_SENDER_H_
+#ifndef YAVRHA_REMOTE_RELAY_H_
+#define YAVRHA_REMOTE_RELAY_H_
 
 
 #include <avr/interrupt.h>
@@ -43,7 +43,13 @@
 	and to store the configuration data received */
 
 extern uint8_t buffer[10];
-extern uint8_t NODE_NUMBER;		// to store node number from ram.		
+extern uint8_t NODE_NUMBER;		// to store node number from ram.
+extern uint8_t DATA0;			// To store device status & data
+extern uint8_t DATA1;
+extern uint8_t DATA2;
+extern uint8_t DATA3;
+extern uint8_t RECV_MSGID;			// To store the MSGID from incoming message
+extern uint8_t RECV_NODE_NUMBER;	// To store the Node Number of received MSG.
 
 // Define Radio nRF24L01 Radio Setting
 #define PAYLOAD_WIDTH 6			// Must match RX {NODE#, MESS#, DATA3, DATA2, DATA1, DATA0}
@@ -75,9 +81,10 @@ extern uint8_t EEMEM CH;
 
 
 // Since individual bits cannot be modified, all CONFIG settings must be set up at start up.
-// EN_CRC enable CRC, CRCO set up 2 bytes CRC.
+// EN_CRC enable CRC, CRCO set up 2 bytes CRC. As precaution, also MASK TX_DS and MAX_RT interrupt for RX
 #define TX_POWERUP	  nrf_config_register(CONFIG,(1<<PWR_UP)|(1<<EN_CRC) | (1<<CRCO));
 #define TX_POWERDWN  nrf_config_register(CONFIG, (1<<EN_CRC) | (1<<CRCO));
+#define RX_POWERUP	  nrf_config_register(CONFIG,(1<<MASK_TX_DS)|(1<<MASK_MAX_RT)|(1<<PWR_UP)|(1<<EN_CRC) | (1<<CRCO) | (1<<PRIM_RX) );
 
 
 // Watchdog Timer Definitions ***************************

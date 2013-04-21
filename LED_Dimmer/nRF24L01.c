@@ -22,7 +22,7 @@
     You should have received a copy of the GNU General Public License
     along with Yavrha.  If not, see <http://www.gnu.org/licenses/>.
 
-*/
+*/ 
 #include "yavrha_remote_relay.h"
 
 uint8_t EEMEM CH;

@@ -39,7 +39,8 @@ uint8_t buffer[10];
 uint8_t CONFIG_FLAG;
 
 // GLOBAL Variables to store device status
-// This example only use DATA0
+// This example only use DATA0 and DATA1
+// DATA0 is 1 for ON, 0 for OFF, DATA1 is 0 to 255 for PWM.
 uint8_t DATA0, DATA1, DATA2, DATA3;
 // MSGID to send in txmode, received MSGID, received node number
 uint8_t MSGID, RECV_MSGID;

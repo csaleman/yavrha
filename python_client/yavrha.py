@@ -1,5 +1,29 @@
 #!/usr/bin/env python3
+'''
+               Yavrha
+     Copyright (C) Carlos Silva, 2013
+      (csaleman [at] gmail [dot] com)
 
+      http://code.google.com/p/yavrha/
+'''
+
+'''
+    This file is part of Yavrha.
+
+    Yavrha is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Yavrha is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Yavrha.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
 # This code connect to a serial port and send data to a MQTT server
 
 import serial
@@ -9,7 +33,6 @@ import mosquitto
 
 # Global Variables
 REFRESH_DELAY = 5           # Delay in seconds to send new values only
-FULL_REFRESH_DELAY = 10     # Will send all the configuration in REFRESH_DELAY * FULL_REFRESH_DELAY seconds
 ACTIVE_NODES = []
 NODES = {}          # Nested Dictionary in {"node1":{"name":"blabla", "type":1, etc.}, "node2":{"name":"blabla", etc...
 MQTT_SERVER = "test.mosquitto.org"
@@ -23,52 +46,55 @@ ser = serial.Serial('/dev/ttyACM0',19200, timeout=.1)
 client = mosquitto.Mosquitto("yavrha-client")
 client.connect(MQTT_SERVER)
 
+# ********************************************************
+# Get Configuration data from serial port and publish it in MQTT Server
+# ********************************************************
 
-# Load Node Configuration
-command = bytes("print_cfg \r\n","utf-8")
-# make sure input buffer is empty
-ser.flushInput()
-ser.write(command)
-# read with the intention of delete the command sent
-ser.readline()
-Node_Cfg = (ser.read(1000))
-Node_Cfg_string = "[" + Node_Cfg.decode() +"]"
-#print(Node_Cfg_string,"\n******\n")
-Node_Cfg_Obj = json.loads(Node_Cfg_string)
-#print(Node_Cfg_Obj[0]['channel'])
-#print(Node_Cfg_Obj[0]['home_addr'])
-#print(Node_Cfg_Obj[0]['node0'])
-i=0
-while 'node'+str(i) in Node_Cfg_Obj[0]: 
-    if Node_Cfg_Obj[0]['node'+str(i)]['enable'] == 1:
-        ACTIVE_NODES.append(i)
+def Send_Cfg_Data():
+    # Load Node Configuration
+    command = bytes("print_cfg \r\n","utf-8")
+    # make sure input buffer is empty
+    ser.flushInput()
+    ser.write(command)
+    # read with the intention of delete the command sent
+    ser.readline()
+    Node_Cfg = (ser.read(1000))
+    Node_Cfg_string = "[" + Node_Cfg.decode() +"]"
+    #print(Node_Cfg_string,"\n******\n")
+    Node_Cfg_Obj = json.loads(Node_Cfg_string)
+    #print(Node_Cfg_Obj[0]['channel'])
+    #print(Node_Cfg_Obj[0]['home_addr'])
+    #print(Node_Cfg_Obj[0]['node0'])
+
+#   Add active Nodes in the ACTIVE_NODES Global    
+    i=0
+    while 'node'+str(i) in Node_Cfg_Obj[0]: 
+        if Node_Cfg_Obj[0]['node'+str(i)]['enable'] == 1:
+            ACTIVE_NODES.append(i)
 
 #   Load information in NODES object
-        if 'node'+str(i) not in NODES:
-            NODES["node"+str(i)] = {}       
-        else:
-            NODES["node"+str(i)]["name"] = str(Node_Cfg_Obj[0]['node'+str(i)]['name'])
-            NODES["node"+str(i)]["type"] = str(Node_Cfg_Obj[0]['node'+str(i)]['type'])
-            NODES["node"+str(i)]["address"] = str(Node_Cfg_Obj[0]['node'+str(i)]['address'])
-            NODES["node"+str(i)]["number"] = str(Node_Cfg_Obj[0]['node'+str(i)]['number'])
+            if 'node'+str(i) not in NODES:
+                NODES["node"+str(i)] = {}       
+            else:
+                NODES["node"+str(i)]["name"] = str(Node_Cfg_Obj[0]['node'+str(i)]['name'])
+                NODES["node"+str(i)]["type"] = str(Node_Cfg_Obj[0]['node'+str(i)]['type'])
+                NODES["node"+str(i)]["address"] = str(Node_Cfg_Obj[0]['node'+str(i)]['address'])
+                NODES["node"+str(i)]["number"] = str(Node_Cfg_Obj[0]['node'+str(i)]['number'])
 
 
 #       print(Node_Cfg_Obj[0]['node'+str(i)])
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",str(Node_Cfg_Obj[0]['node'+str(i)]['name']), 1, True)
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",str(Node_Cfg_Obj[0]['node'+str(i)]['type']), 1, True)
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",str(Node_Cfg_Obj[0]['node'+str(i)]['address']), 1, True)
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",str(Node_Cfg_Obj[0]['node'+str(i)]['number']), 1, True)
+                client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",str(Node_Cfg_Obj[0]['node'+str(i)]['name']), 1, True)
+                client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",str(Node_Cfg_Obj[0]['node'+str(i)]['type']), 1, True)
+                client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",str(Node_Cfg_Obj[0]['node'+str(i)]['address']), 1, True)
+                client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",str(Node_Cfg_Obj[0]['node'+str(i)]['number']), 1, True)
 
 # This print a emptly message the same a delete old messages from MQTT server in deactivated nodes
-    else:
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",None , 1, True)
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",None , 1, True)
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",None, 1, True)
-        client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",None, 1, True)
-
-   
-    i += 1
-#print(ACTIVE_NODES)        
+        else:
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",None , 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",None , 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",None, 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",None, 1, True)
+        i += 1
 
 
 # ********************************************************
@@ -132,6 +158,9 @@ client.subscribe(MQTT_TOPIC+"/+/cmd", 0)
 # Set Call back functions
 client.on_connect = on_connect
 client.on_message = on_message
+
+# Send Configuration Data
+Send_Cfg_Data()
 
 
 # Main Loop 

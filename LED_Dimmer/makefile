@@ -13,7 +13,7 @@ MCU = atmega168p
 # MCU = attiny45
 
 # Target file name (without extension).
-TARGET = yavrha_temp_sender
+TARGET = yavrha_LED_Dimmer
 
 # Programming hardware: type avrdude -c ?
 # to get a full listing.
@@ -39,7 +39,7 @@ SRC = $(TARGET).c
 
 # If there is more than one source file, append them above, or modify and
 # uncomment the following:
-SRC += nRF24L01.c adc.c
+SRC += nRF24L01.c
 
 # You can also wrap lines by appending a backslash to the end of the line:
 #SRC += baz.c \
@@ -140,7 +140,7 @@ AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 #AVRDUDE_FLAGS += -v -v
 
 #Run while cable attached or don't
-#AVRDUDE_FLAGS += -E reset #keep chip disabled while cable attached
+AVRDUDE_FLAGS += -E reset #keep chip disabled while cable attached
 #AVRDUDE_FLAGS += -E noreset
 
 #AVRDUDE_WRITE_FLASH = -U lfuse:w:0x04:m #run with 8 Mhz clock
