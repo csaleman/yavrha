@@ -66,29 +66,31 @@ def Send_Cfg_Data():
     #print(Node_Cfg_Obj[0]['home_addr'])
     #print(Node_Cfg_Obj[0]['node0'])
 
-#   Add active Nodes in the ACTIVE_NODES Global    
+#   This is a loop through all elements in Node_Cfg_Obj
     i=0
     while 'node'+str(i) in Node_Cfg_Obj[0]: 
+#   Add active Nodes in the ACTIVE_NODES Global variable
         if Node_Cfg_Obj[0]['node'+str(i)]['enable'] == 1:
             ACTIVE_NODES.append(i)
 
 #   Load information in NODES object
+#   First check if the NODE object exist in NODES before setting properties, if not it create an emptly object 
             if 'node'+str(i) not in NODES:
-                NODES["node"+str(i)] = {}       
-            else:
-                NODES["node"+str(i)]["name"] = str(Node_Cfg_Obj[0]['node'+str(i)]['name'])
-                NODES["node"+str(i)]["type"] = str(Node_Cfg_Obj[0]['node'+str(i)]['type'])
-                NODES["node"+str(i)]["address"] = str(Node_Cfg_Obj[0]['node'+str(i)]['address'])
-                NODES["node"+str(i)]["number"] = str(Node_Cfg_Obj[0]['node'+str(i)]['number'])
+                NODES["node"+str(i)] = {}     
 
+#   Copy Nodes properties from Node_Cfg_Obj to NODES
+            NODES["node"+str(i)]["name"] = str(Node_Cfg_Obj[0]['node'+str(i)]['name'])
+            NODES["node"+str(i)]["type"] = str(Node_Cfg_Obj[0]['node'+str(i)]['type'])
+            NODES["node"+str(i)]["address"] = str(Node_Cfg_Obj[0]['node'+str(i)]['address'])
+            NODES["node"+str(i)]["number"] = str(Node_Cfg_Obj[0]['node'+str(i)]['number'])
+            
+#   Publish Nodes properties in MQTT Server with retain flag
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",str(Node_Cfg_Obj[0]['node'+str(i)]['name']), 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",str(Node_Cfg_Obj[0]['node'+str(i)]['type']), 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",str(Node_Cfg_Obj[0]['node'+str(i)]['address']), 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",str(Node_Cfg_Obj[0]['node'+str(i)]['number']), 1, True)
 
-#       print(Node_Cfg_Obj[0]['node'+str(i)])
-                client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",str(Node_Cfg_Obj[0]['node'+str(i)]['name']), 1, True)
-                client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",str(Node_Cfg_Obj[0]['node'+str(i)]['type']), 1, True)
-                client.publish(MQTT_TOPIC + "/node"+str(i)+"/address",str(Node_Cfg_Obj[0]['node'+str(i)]['address']), 1, True)
-                client.publish(MQTT_TOPIC + "/node"+str(i)+"/number",str(Node_Cfg_Obj[0]['node'+str(i)]['number']), 1, True)
-
-# This print a emptly message the same a delete old messages from MQTT server in deactivated nodes
+# If Node was deactivated, this publish a empty message with retain flag to delete old retained messages if any
         else:
             client.publish(MQTT_TOPIC + "/node"+str(i)+"/name",None , 1, True)
             client.publish(MQTT_TOPIC + "/node"+str(i)+"/type",None , 1, True)

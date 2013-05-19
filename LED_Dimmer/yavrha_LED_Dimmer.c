@@ -140,7 +140,7 @@ void relay_action() {
 		{
             // Relay On			
             PORTB |= (1<<PIN7);	
-            // Change PWM Duty Cycle
+            // Change PWM Duty Cycle PD6
             OCR0A = DATA1;
 		} 
 

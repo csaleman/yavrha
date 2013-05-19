@@ -56,7 +56,7 @@
 // 		This is the function that initiate jquery.
 //********************************************************
 
-        $('#main').live('pageinit', function() {
+        $(document).on('pageinit',"#main", function() {
 //		Check if local storage is suported in the browser           
 			if (Modernizr.localstorage) {
                 showStoreValue();
@@ -156,9 +156,6 @@ function StoreMsg(Topic, Payload, qos, retain){
 
     }
 
-    
-
-
 
 //	If message is "Number" which is the last configuration message sent by the python client call the PaintScreen function.
 
@@ -192,19 +189,36 @@ function PaintScreen()
 		if (Node["type"] > 127) {
 			
 			switch (parseInt(Node["type"])){
-				
+				// Device type 128 On/Off device
 				case 128:
 					$('ul#MainUl').append('<li data-role="list-divider">Switch ' + Node["name"] + ' </li>');
 			 		$('ul#MainUl').append('<li><select name="node'+ Node["number"] + '" id="node'+ Node["number"] + '" data-role="slider" data-mini="true"> \
-										<option value="0">Off</option> <option value="1">On \
-										</option> </select></li>');
-					$('#node'+ Node["number"] ).on( 'slidestop', function( event ) { PostSwitchMessage($(this).attr('id') ,$(this).attr('value')); });
-					break;
-				case 129:
+										   <option value="0">Off</option> <option value="1">On\
+										   </option> </select></li>');
+					$('#node'+ Node["number"] ).on( 'slidestop', function( event ) { PostSwitchMessage($(this).attr('id') ,$(this).val()); });		
+                    break;
+            	
+                // Device type 129 On/Off device with Dimmer		
+            	case 129:
 					$('ul#MainUl').append('<li data-role="list-divider">Dimmer ' + Node["name"] + ' </li>');
-			 		$('ul#MainUl').append('<li> <input type="text" id="Node1" name="Node1"/> </li>');
-					break;
-				case 130:
+			 		$('ul#MainUl').append('<li><select name="Snode'+ Node["number"] + '" id="Snode'+ Node["number"] + '" data-role="slider" data-mini="true"> \
+										   <option value="0">Off</option> <option value="1">On\
+										   </option> </select>\
+                                           <label for="node'+ Node["number"] + '" class="ui-hidden-accessible">Input slider:</label> \
+                                           <input type="range" name="node'+ Node["number"] + '" id="node'+ Node["number"] + '" \
+                                           value="5" min="0" max="10" step="1" data-highlight="true" data-mini="true"/></li>');
+                    
+//                	Refresh the CSS in the list. The event handlers MUST be set after refreshing the list. 
+                    $('#MainUl').listview("refresh").trigger("create"); 
+//                  Set event handler to handle dimmer                                       
+                    $('#node'+ Node["number"]).ready( CreateDimmerEvent(Node["number"]));
+//                  Set event handler to hande switch
+                    $('#Snode'+ Node["number"]).ready(  CreateDimmerSwitchEvent(Node["number"]));
+                 
+                    break;
+                
+                // Device type 130 Servo Device 				
+                case 130:
 					$('ul#MainUl').append('<li data-role="list-divider">Servo ' + Node["name"] + ' </li>');
 			 		$('ul#MainUl').append('<li> <input type="text" id="Node1" name="Node1"/> </li>');
 					break;
@@ -247,10 +261,42 @@ function PaintScreen()
 // 	This works in all JQ Mobile Version 	 
 	$('#MainUl').listview("refresh").trigger("create");
 }
+//********************************************************
+// This function create event handlers for Dimmer Slider
+// 
+//********************************************************
+function CreateDimmerEvent(NodeNumber){
+  
+// The following check if the handler exist before creating one.
+    var ev = $._data($('#node'+ NodeNumber)[0], 'events');
+
+    if (!(ev && ev.slidestop)) {
+//  Create a event handler        
+            $('#node'+ NodeNumber).on('slidestop', function( event ) { PostDimmerMessage($(this).attr('id'));  });
+        }
+
+}
+
+//********************************************************
+// This function create event handlers for Dimmer Switch
+//********************************************************
+function CreateDimmerSwitchEvent(NodeNumber){
+  
+// The following check if the handler exist before creating one.
+    var ev = $._data($('#Snode'+ NodeNumber)[0], 'events');
+
+    if (!(ev && ev.slidestop)) {
+//  Create a event handler        
+            $('#Snode'+ NodeNumber).on('slidestop', function( event ) { PostDimmerMessage('node'+ NodeNumber); });
+        }
+
+}
 
 
 //********************************************************
 // Function to update values
+// 
+//
 //********************************************************
 function UpdateValues(){
 
@@ -288,7 +334,20 @@ function UpdateValues(){
                         }
 					break;
 				case 129:
-					
+					// Only refresh data if the MSGID is new.
+                    // This is important to keep the slider steady in OFF or ON after a user change it status.                    
+                        // this first if, just initialize the first time.
+                        if (typeof OldMSGID[NodeNumber] == 'undefined' && typeof Node["msgid"] != 'undefined' ){
+                                OldMSGID[NodeNumber] = parseInt(Node["msgid"]) -1 ;
+                            }
+     
+                        if(OldMSGID[NodeNumber] < Node["msgid"]) {			
+                        OldMSGID[NodeNumber] = parseInt(Node["msgid"]);
+                    // This command assign a new value to the widget and refresh it.                        
+                        $('#S'+NodeNumber).val(Node["data0"]).slider("refresh");
+                        $('#'+NodeNumber).val(parseInt(Node["data1"]) / 25).slider("refresh");
+
+                        }
 					break;
 				case 130:
 					
@@ -300,12 +359,15 @@ function UpdateValues(){
 }
 
   
-//********************************************************
-// Function to Post Messages back to MQTT server
-//********************************************************
+//***************************************************************************************
+// Function to Post Messages back to MQTT server from Device Type 128 On/OFF Switch
+//***************************************************************************************
 function PostSwitchMessage(Node, PostVal)
 {
 // Increment OldMSGID by 2, which means do not use the next X messages, this is to keep the slider steady in position after a user update    
+
+    //console.log(Node);
+
     OldMSGID[NodeNumber]  =  parseInt(OldMSGID[NodeNumber]) + 2;
 
     if (OldMSGID[NodeNumber] > 254) {
@@ -313,6 +375,30 @@ function PostSwitchMessage(Node, PostVal)
     }    
     postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
     t.publish(postTopic, PostVal,0,0);
+
+	//alert(postTopic);
+}
+
+//*********************************************************************************************
+// Function to Post Messages back to MQTT server from Device Type 129 On/OFF Switch with dimmer
+// arguments: node
+//  Function will look for values in Snode for switch on/off and in node for dimmer pwm
+//*********************************************************************************************
+function PostDimmerMessage(Node)
+{
+// Increment OldMSGID by 2, which means do not use the next X messages, this is to keep the slider steady in position after a user update    
+
+ OldMSGID[NodeNumber]  =  parseInt(OldMSGID[NodeNumber]) + 2;
+
+    if (OldMSGID[NodeNumber] > 254) {
+        OldMSGID[NodeNumber] = 0
+    }
+
+    //Since slider will step from 1 to 10, I will multiply the value by 25
+    var newPostVal = parseInt( $('#'+Node).val()) * 25;
+
+    postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
+    t.publish(postTopic, $('#S'+Node).val() + " " + newPostVal,0,0);
 
 	//alert(postTopic);
 }
