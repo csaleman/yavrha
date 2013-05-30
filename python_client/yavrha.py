@@ -32,7 +32,7 @@ import time
 import mosquitto
 
 # Global Variables
-REFRESH_DELAY = 5           # Delay in seconds to send new values only
+REFRESH_DELAY = 1           # Delay in seconds to send new values only
 ACTIVE_NODES = []
 NODES = {}          # Nested Dictionary in {"node1":{"name":"blabla", "type":1, etc.}, "node2":{"name":"blabla", etc...
 MQTT_SERVER = "test.mosquitto.org"
@@ -103,6 +103,7 @@ def Send_Cfg_Data():
 # Get data from serial port and publish it in MQTT Server
 # ********************************************************
 def Send_Data():
+    time.sleep(0.1)    
     ser.flushInput()    # make sure input buffer is empty
     command = bytes("get \r\n","utf-8")
     ser.write(command)
@@ -114,29 +115,55 @@ def Send_Data():
     try:    
         Node_Data_Obj = json.loads(Node_Data_string)
     except	ValueError:
-        print("Value Error with json.loads(Node_Data_string)")
+        print("Value Error with json.loads(Node_Data_string)\n")
+        print(Node_Data_string)
         return 0
 # Loop through all active nodes
 
     for item in ACTIVE_NODES:
 
+# This check if the key exist in the object if not it create the key, this is to avoid error in the following if
+        if 'msgid' not in  NODES['node'+str(item)]:
+            NODES['node'+str(item)]["msgid"] = " "
+
+        if 'data0' not in  NODES['node'+str(item)]:
+            NODES['node'+str(item)]["data0"] = " "
+
+        if 'data1' not in  NODES['node'+str(item)]:
+            NODES['node'+str(item)]["data1"] = " "
+
+        if 'data2' not in  NODES['node'+str(item)]:
+            NODES['node'+str(item)]["data2"] = " "
+
+        if 'data3' not in  NODES['node'+str(item)]:
+            NODES['node'+str(item)]["data3"] = " "
+
 # Load new data in NODES object
 # Check if new data is different that old one, if so it update the value in the NODES object and publish the value.
 
-        NODES['node'+str(item)]["msgid"] = str(Node_Data_Obj[0]['node'+str(item)]['msgid'])
-        client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1)
+#        if (NODES['node'+str(item)]["msgid"] != str(Node_Data_Obj[0]['node'+str(item)]['msgid'])):        
+#            NODES['node'+str(item)]["msgid"] = str(Node_Data_Obj[0]['node'+str(item)]['msgid'])
+#            client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1, True)
             
-        NODES['node'+str(item)]["data0"] = str(Node_Data_Obj[0]['node'+str(item)]['data0'])
-        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data0",str(Node_Data_Obj[0]['node'+str(item)]['data0']), 1)
+        if (NODES['node'+str(item)]["data0"] != str(Node_Data_Obj[0]['node'+str(item)]['data0'])):    
+            NODES['node'+str(item)]["data0"] = str(Node_Data_Obj[0]['node'+str(item)]['data0'])
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/data0",str(Node_Data_Obj[0]['node'+str(item)]['data0']), 1, True)
       
-        NODES['node'+str(item)]["data1"] = str(Node_Data_Obj[0]['node'+str(item)]['data1'])
-        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data1",str(Node_Data_Obj[0]['node'+str(item)]['data1']), 1)
+        if (NODES['node'+str(item)]["data1"] != str(Node_Data_Obj[0]['node'+str(item)]['data1'])):
+            NODES['node'+str(item)]["data1"] = str(Node_Data_Obj[0]['node'+str(item)]['data1'])
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1, True)            
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/data1",str(Node_Data_Obj[0]['node'+str(item)]['data1']), 1, True)
       
-        NODES['node'+str(item)]["data2"] = str(Node_Data_Obj[0]['node'+str(item)]['data2'])
-        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data2",str(Node_Data_Obj[0]['node'+str(item)]['data2']), 1)
+        if (NODES['node'+str(item)]["data2"] != str(Node_Data_Obj[0]['node'+str(item)]['data2'])):
+            NODES['node'+str(item)]["data2"] = str(Node_Data_Obj[0]['node'+str(item)]['data2'])
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1, True)            
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/data2",str(Node_Data_Obj[0]['node'+str(item)]['data2']), 1, True)
 
-        NODES['node'+str(item)]["data3"] = str(Node_Data_Obj[0]['node'+str(item)]['data3'])
-        client.publish(MQTT_TOPIC + "/node"+str(item)+"/data3",str(Node_Data_Obj[0]['node'+str(item)]['data3']), 1)
+        if (NODES['node'+str(item)]["data3"] != str(Node_Data_Obj[0]['node'+str(item)]['data3'])):
+            NODES['node'+str(item)]["data3"] = str(Node_Data_Obj[0]['node'+str(item)]['data3'])
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/msgid",str(Node_Data_Obj[0]['node'+str(item)]['msgid']), 1, True)
+            client.publish(MQTT_TOPIC + "/node"+str(item)+"/data3",str(Node_Data_Obj[0]['node'+str(item)]['data3']), 1, True)
 
 		
 def Received_Cmd(msg):

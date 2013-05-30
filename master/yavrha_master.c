@@ -123,7 +123,7 @@ ISR (TIMER0_COMPA_vect)
 	}
 
 
-/* External inturrpt caused by radio */
+/* External interrupt caused by radio */
 
 ISR(INT0_vect) {
 	

@@ -48,11 +48,14 @@ uint8_t MSGID, RECV_MSGID;
 // Function Prototypes
 void relay_action(void);
 void nrf_read_cfg_payload(void);
-void nrf_read_payload(void);
+uint8_t nrf_read_payload(void);
 void nrf_tx_config(void);
 void nrf_send(uint8_t *);
 void nrf_rx_config(void);
 void pwm_init(void);
+void report_status(void);
+void spi_init(void);
+void remote_nrf_config(void);
 
 //          *** IMPORTANT ***
 // Avoid nasty resets after wdt reset.
@@ -74,26 +77,50 @@ ISR(INT0_vect) {
 	
 	// Important disable Global interrupts
 	cli();
+
+    // This flag is used while waiting for configuration data.
 	if (CONFIG_FLAG == 1)
 	{
 		nrf_read_cfg_payload();
 		//clear flag
 		CONFIG_FLAG = 0;
 	} 
-	else
+
+    
+    else
 	{
-		nrf_read_payload();
-		relay_action();
+        // Check if received paylod belong to this node.		
+        if ( nrf_read_payload() == 1 ) {
+		
+            relay_action();
+            
+            // Report Status Back.    
+            report_status ();
+        }
 	}
 	
 	sei();
 }
 
+// This is the interrupt asserted after X seconds OCR1A in CTC
 
-ISR(TIMER1_COMPA_vect)
-{
-			
+ISR(TIMER1_COMPA_vect){
+
+	// Disable Interrupts		
 	cli();
+ 
+    // Report Current Status
+    report_status();
+    
+    // Enable Interrupts
+	sei();	
+	
+}
+
+// This function send "Report" the current node status.
+
+void report_status () {
+
 	// configure radio in TX
 		nrf_tx_config();
 		buffer[0] = DATA0;
@@ -108,9 +135,9 @@ ISR(TIMER1_COMPA_vect)
 						
 	// Return radio to rx mode
 		nrf_rx_config();
-		sei();	
-	
+
 }
+
 
 // This function initialize the 8bit Timer/Counter 0 as a PWM
 

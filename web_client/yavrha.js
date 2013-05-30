@@ -32,7 +32,6 @@
 	var localStorageKey4 = "MosquittoServerPassword";
 	var TOPIC = "";        // Used to store TOPIC
     var NodesObj = {};     // Main object where nodes data is stored
-    var OldMSGID = [];   // Array used to store previous MSGID, this is used to avoid to refresh switch etc, back with old information after user change it change.
 
 // Mosquitto Object
 	var t = new Mosquitto();
@@ -124,6 +123,26 @@ function MosquittoSetup(server,topic)
 	}
 
 }
+
+//********************************************************
+// This function Refresh the values every 10 seconds.
+//********************************************************
+
+window.setInterval(RefreshFunctions, 10000);
+
+function RefreshFunctions() { 
+    
+//        alert('test'); 
+
+//      Update all controls values
+        UpdateValues();ko khnnjhm ;n; n., l;loh ;lkp[];def,gr';hpk UpdateValues();][;ytki45g ;'[6-yto0iytihjn'lN
+'[t;l;jlkmhlk,lkh
+hl';hloigi9ut8598 t79otlgkjvokg0go0oggpovl l n,mb,bfl,bkl,m
+
+
+}
+
+
 //********************************************************
 // This function is a callback from the mosquitto instance
 //********************************************************
@@ -162,10 +181,17 @@ function StoreMsg(Topic, Payload, qos, retain){
 	if (MsgName == "number") {
 		
 		PaintScreen();
-	}
-            
+//  Make sure of update all controls values after PaintScreen.
+        
         UpdateValues();
+	}
+        
+//  Update Data only if a data0 to data3 is posted.
 
+     if (MsgName == "data0" || MsgName == "data1" || MsgName == "data2" || MsgName == "data3") {    
+       
+         UpdateValues();
+     }
        
 	 //DebugWindow.value = JSON.stringify(NodesObj);
 	 //console.log(NodesObj);	
@@ -295,8 +321,6 @@ function CreateDimmerSwitchEvent(NodeNumber){
 
 //********************************************************
 // Function to update values
-// 
-//
 //********************************************************
 function UpdateValues(){
 
@@ -319,35 +343,14 @@ function UpdateValues(){
 					
 					break;
 				case 128:
-                    // Only refresh data if the MSGID is new.
-                    // This is important to keep the slider steady in OFF or ON after a user change it status.                    
-                        // this first if, just initialize the first time.
-                        if (typeof OldMSGID[NodeNumber] == 'undefined' && typeof Node["msgid"] != 'undefined' ){
-                                OldMSGID[NodeNumber] = parseInt(Node["msgid"]) -1 ;
-                            }
-     
-                        if(OldMSGID[NodeNumber] < Node["msgid"]) {			
-                        OldMSGID[NodeNumber] = parseInt(Node["msgid"]);
                     // This command assign a new value to the widget and refresh it.                        
                         $('#'+NodeNumber).val(Node["data0"]).slider("refresh");
-
-                        }
 					break;
 				case 129:
-					// Only refresh data if the MSGID is new.
-                    // This is important to keep the slider steady in OFF or ON after a user change it status.                    
-                        // this first if, just initialize the first time.
-                        if (typeof OldMSGID[NodeNumber] == 'undefined' && typeof Node["msgid"] != 'undefined' ){
-                                OldMSGID[NodeNumber] = parseInt(Node["msgid"]) -1 ;
-                            }
-     
-                        if(OldMSGID[NodeNumber] < Node["msgid"]) {			
-                        OldMSGID[NodeNumber] = parseInt(Node["msgid"]);
                     // This command assign a new value to the widget and refresh it.                        
                         $('#S'+NodeNumber).val(Node["data0"]).slider("refresh");
                         $('#'+NodeNumber).val(parseInt(Node["data1"]) / 25).slider("refresh");
 
-                        }
 					break;
 				case 130:
 					
@@ -364,15 +367,7 @@ function UpdateValues(){
 //***************************************************************************************
 function PostSwitchMessage(Node, PostVal)
 {
-// Increment OldMSGID by 2, which means do not use the next X messages, this is to keep the slider steady in position after a user update    
 
-    //console.log(Node);
-
-    OldMSGID[NodeNumber]  =  parseInt(OldMSGID[NodeNumber]) + 2;
-
-    if (OldMSGID[NodeNumber] > 254) {
-        OldMSGID[NodeNumber] = 0
-    }    
     postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
     t.publish(postTopic, PostVal,0,0);
 
@@ -386,15 +381,7 @@ function PostSwitchMessage(Node, PostVal)
 //*********************************************************************************************
 function PostDimmerMessage(Node)
 {
-// Increment OldMSGID by 2, which means do not use the next X messages, this is to keep the slider steady in position after a user update    
-
- OldMSGID[NodeNumber]  =  parseInt(OldMSGID[NodeNumber]) + 2;
-
-    if (OldMSGID[NodeNumber] > 254) {
-        OldMSGID[NodeNumber] = 0
-    }
-
-    //Since slider will step from 1 to 10, I will multiply the value by 25
+   //Since slider will step from 1 to 10, I will multiply the value by 25
     var newPostVal = parseInt( $('#'+Node).val()) * 25;
 
     postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
