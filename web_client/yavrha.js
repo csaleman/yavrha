@@ -135,9 +135,7 @@ function RefreshFunctions() {
 //        alert('test'); 
 
 //      Update all controls values
-        UpdateValues();ko khnnjhm ;n; n., l;loh ;lkp[];def,gr';hpk UpdateValues();][;ytki45g ;'[6-yto0iytihjn'lN
-'[t;l;jlkmhlk,lkh
-hl';hloigi9ut8598 t79otlgkjvokg0go0oggpovl l n,mb,bfl,bkl,m
+        UpdateValues();
 
 
 }

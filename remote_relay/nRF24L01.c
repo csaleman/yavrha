@@ -40,7 +40,7 @@ uint8_t nrf_command(uint8_t);
 void nrf_config_register(uint8_t, uint8_t);
 void nrf_send(uint8_t *);
 void remote_nrf_config(void);
-void nrf_read_payload(void); 
+uint8_t nrf_read_payload(void); 
 void remote_cfg_toEEPROM(uint8_t *);
 void nrf_tx_config(void);
 void nrf_rx_config(void);
@@ -323,12 +323,17 @@ void remote_nrf_config(void)
 	
 
 }
+/* Read data from radio.
+   Since more than one radio could be present in a channel, this function check Node_Number to see if the
+   Package belong to this node, if does, it update the Global DATA variables and return 1, 
+   if not it retransmit the package and return 0. 
+*/
+uint8_t nrf_read_payload(void) 
 
-void nrf_read_payload(void) 
-// Sends a data package to the default address. Be sure to send the correct
-// amount of bytes as configured as payload on the receiver.
 {
 	
+    uint8_t ReturnFlag  = 0;
+
     CSN_LOW                    // Pull down chip select
     spi_fast_shift( R_RX_PAYLOAD ); // Send Read Payload Command
     spi_transfer_sync(buffer,buffer, PAYLOAD_WIDTH);   // Read payload
@@ -346,6 +351,7 @@ void nrf_read_payload(void)
 		DATA2 = buffer[2];
 		DATA3 = buffer[3];
 		RECV_MSGID = buffer[4];
+        ReturnFlag = 1;
 	}
 	// Else forward the message	
 	else {
@@ -363,6 +369,9 @@ void nrf_read_payload(void)
 
 	}
 
+
+// Return 1 if received packaged pertained to this node, else return 0.
+    return ReturnFlag;
 }
 
 

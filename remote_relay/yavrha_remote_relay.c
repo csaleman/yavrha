@@ -47,10 +47,13 @@ uint8_t MSGID, RECV_MSGID;
 // Function Prototypes
 void relay_action(void);
 void nrf_read_cfg_payload(void);
-void nrf_read_payload(void);
+uint8_t nrf_read_payload(void);
 void nrf_tx_config(void);
 void nrf_send(uint8_t *);
 void nrf_rx_config(void);
+void report_status(void);
+void spi_init(void);
+void remote_nrf_config(void);
 
 //          *** IMPORTANT ***
 // Avoid nasty resets after wdt reset.
@@ -72,16 +75,26 @@ ISR(INT0_vect) {
 	
 	// Important disable Global interrupts
 	cli();
+
+    // This flag is used while waiting for configuration data.
 	if (CONFIG_FLAG == 1)
 	{
 		nrf_read_cfg_payload();
 		//clear flag
 		CONFIG_FLAG = 0;
 	} 
-	else
+
+    
+    else
 	{
-		nrf_read_payload();
-		relay_action();
+        // Check if received paylod belong to this node.		
+        if ( nrf_read_payload() == 1 ) {
+		
+            relay_action();
+            
+            // Report Status Back.    
+            report_status ();
+        }
 	}
 	
 	sei();
@@ -91,24 +104,14 @@ ISR(INT0_vect) {
 ISR(TIMER1_COMPA_vect)
 {
 			
+		// Disable Interrupts		
 	cli();
-	//PORTB ^= (1<<PIN7); // Toggle the LED
-	// configure radio in TX
-		nrf_tx_config();
-		buffer[0] = DATA0;
-		buffer[1] = DATA1;
-		buffer[2] = DATA2;
-		buffer[3] = DATA3;
-		buffer[4] = MSGID++;
-		buffer[5] =	NODE_NUMBER;
-						
-	// send package
-		nrf_send(buffer);
-						
-	// configure radio as rx again.
-		nrf_rx_config();
-	//	TIFR1 = (1 << OCF1A); // clear the CTC flag (writing a logic one to the set flag clears it)
-		sei();	
+ 
+    // Report Current Status
+    report_status();
+    
+    // Enable Interrupts
+	sei();		
 	
 }
 
@@ -125,6 +128,25 @@ void relay_action() {
 		}	
 }
 
+
+void report_status () {
+
+	// configure radio in TX
+		nrf_tx_config();
+		buffer[0] = DATA0;
+		buffer[1] = DATA1;
+		buffer[2] = DATA2;
+		buffer[3] = DATA3;
+		buffer[4] = MSGID++;
+		buffer[5] =	NODE_NUMBER;
+						
+	// send package
+		nrf_send(buffer);
+						
+	// Return radio to rx mode
+		nrf_rx_config();
+
+}
 
 int main(void)
 {
