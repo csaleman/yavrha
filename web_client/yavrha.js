@@ -116,7 +116,7 @@ function showStoreValue() {
 function MosquittoSetup(server,topic)
 {
    if (server != null && topic != null) {
-    	t.connect(server,100000);
+    	t.connect(server,10000);
     	t.subscribe(topic,0);
 // Set callback function
 		t.onmessage = StoreMsg;
@@ -136,6 +136,10 @@ function RefreshFunctions() {
 
 //      Update all controls values
         UpdateValues();
+
+//      Reconnect Mosquitto JS Client after Keepalive expires
+
+ MosquittoSetup(localStorage.getItem(localStorageKey1),localStorage.getItem(localStorageKey2));       
 
 
 }
@@ -385,5 +389,5 @@ function PostDimmerMessage(Node)
     postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
     t.publish(postTopic, $('#S'+Node).val() + " " + newPostVal,0,0);
 
-	//alert(postTopic);
+	//alert(postTopic +" "+ $('#S'+Node).val() + " " + newPostVal);
 }
