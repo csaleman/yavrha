@@ -355,7 +355,7 @@ uint8_t nrf_read_payload(void)
 	}
 	// Else forward the message	
 	else {
-		// short delay to avoid collitions		
+		// short delay to avoid collisions		
 		_delay_loop_2(NODE_NUMBER * 100);
 
 		// configure radio in TX
