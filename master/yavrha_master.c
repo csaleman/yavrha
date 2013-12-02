@@ -77,9 +77,9 @@ uint8_t CFG_ADDR[] = CONFIGURATION_ADDR;
 uint8_t NodesData[MAXSNODES][PAYLOAD_WIDTH];
 uint8_t PRINT_FLAG = 0;		// this is flag to enable continued data printout, just for debugging
 
-// Global variable for Msgid
+// Global variable for MSGID and Last Node Used
 uint8_t MSGID;
-uint8_t LastNodeUsed;
+uint8_t LASTNODEUSED;
 
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
@@ -471,11 +471,11 @@ void Cmd_Handler( char *CmdBuff) {
 										// Node Number
 										msg_to_send[PAYLOAD_WIDTH-1] = temp;
 										
-										// Store the Last Node Used in the globa variable.
-										// This NODE# + MSID will be ignored while receiving data to prevent MASTER NODE to listen to 
-										// it own relayed message. 
+										/* Store the Last Node Used in the globa variable.
+										 This NODE# + MSID will be ignored while receiving data to prevent MASTER NODE to listen to 
+										*/ it own relayed message. 
 										
-										LastNodeUsed = temp;
+										LASTNODEUSED = temp;
 										
 										// Add a MSGID
 										
@@ -620,7 +620,7 @@ uint8_t Save_RadioData(void){
 	
 // This If is used to ignore it MASTER NODDE own relayed messages 
 
-	if(buffer[PAYLOAD_WIDTH-1] != LastNodeUsed || buffer[PAYLOAD_WIDTH-2] != MSGID ) {
+	if(buffer[PAYLOAD_WIDTH-1] != LASTNODEUSED || buffer[PAYLOAD_WIDTH-2] != MSGID ) {
 	    
 	    for (i=0; i < PAYLOAD_WIDTH; i++)
 	    {
@@ -630,8 +630,6 @@ uint8_t Save_RadioData(void){
             ReturnValue =1;		
 	    }
 	}
-
-
 
     return ReturnValue;
 }
