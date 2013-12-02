@@ -63,8 +63,6 @@
 		void EVENT_USB_Device_ControlRequest(void);
 
 
-
-
 	/* Struct Declaration */
 	/* This is the structure to hold nodes Configurations */
 		typedef struct{
@@ -72,7 +70,7 @@
 		uint8_t Node_Number;
 		uint8_t NodeAddr;
 		char NodeName[15];			// Only 15 bytes or less to conserve EEPROM 
-		uint8_t NodeType;			// 1 for temp; 2 for Water alarm; 3 for switch. etc.
+		uint8_t NodeType;			// 1 for temperature; 2 for Water alarm; 3 for switch. etc.
 		}tNodesData;				// New struct Type.
 		
 	/* Common Definitions */
@@ -109,7 +107,7 @@
 		
 	/* EEPROM AND GLOBAL VARIABLES */
 		extern uint8_t EEMEM CH;
-		extern uint8_t EEMEM eeNRF_ADDRESS[4];		//hold 4 MSB of 5
+		extern uint8_t EEMEM eeNRF_ADDRESS[4];		//hold the 4 MSB of 5 in radio address 
 		extern tNodesData EEMEM eeNodes[MAXSNODES];
 		
 		// Buffer MUST be bigger than PAYLOAD_WIDTH in receiver;

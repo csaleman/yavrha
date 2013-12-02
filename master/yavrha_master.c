@@ -61,7 +61,7 @@ help \t\t\tprint this help\r\n";
 /* Function Prototypes: */
 	void SetupHardware(void);
 	void Print_RadioData(void);
-	void Save_RadioData(void);
+	uint8_t Save_RadioData(void);   // Return 1 if valid data was saved else 0.
 	void Cmd_Handler(char *);
 	void print_cfg(void);
 	void reset_radio(void);
@@ -79,6 +79,7 @@ uint8_t PRINT_FLAG = 0;		// this is flag to enable continued data printout, just
 
 // Global variable for Msgid
 uint8_t MSGID;
+uint8_t LastNodeUsed;
 
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
@@ -127,11 +128,11 @@ ISR (TIMER0_COMPA_vect)
 
 ISR(INT0_vect) {
 	
-	Save_RadioData();	// Save received data in structure
+	// Save received data in structure
 	
-	if (PRINT_FLAG)		// Is verbose mode enable?
+	if (PRINT_FLAG && Save_RadioData())		// Is verbose mode enable?
 	{
-	Print_RadioData();	// Print everyting in usb
+	Print_RadioData();	// Print everything in usb
 	}	
 		PORTE ^= (1<<PORTE6);	// toggle led.
 }
@@ -318,7 +319,7 @@ void Cmd_Handler( char *CmdBuff) {
 									
 									}
 							}						
-						}  // else if```````````````````````````````````````````````````````````````````````````````````````````````````````````````````		
+						}  // else if
 
 /* ******************************************************** */					
 						//	Save Node Name
@@ -469,12 +470,21 @@ void Cmd_Handler( char *CmdBuff) {
 										// Must match TX  {NODE#, MSGID#, DATA3, DATA2, DATA1, DATA0}
 										// Node Number
 										msg_to_send[PAYLOAD_WIDTH-1] = temp;
-										// MSGID
+										
+										// Store the Last Node Used in the globa variable.
+										// This NODE# + MSID will be ignored while receiving data to prevent MASTER NODE to listen to 
+										// it own relayed message. 
+										
+										LastNodeUsed = temp;
+										
+										// Add a MSGID
+										
 										msg_to_send[PAYLOAD_WIDTH-2] = MSGID++;
 										
-										// Load eeNRF_ADDRESS from EEPROM into ramNRF_ADDR
+										
+										// Load eeNRF_ADDRESS from EEPROM into ram_NRF_ADDR
 										eeprom_read_block((void *)&ram_NRF_ADDR, (const void *)&eeNRF_ADDRESS,5);
-										//get node address
+										//get node specific address
 										ram_NRF_ADDR[4] = Nodes[temp].NodeAddr;
 										// Configure radio with ch and rx node address
 										nrf_TXnodeCfg(eeprom_read_byte(&CH),ram_NRF_ADDR);	
@@ -591,20 +601,39 @@ void reset_radio(){
 
 /* Save received data in global variable NodesData after interrupt
 	{NODE#, MSGID#, DATA3, DATA2, DATA1, DATA0}
+    Function Return 1 if valid data was received otherwise 0
+    
+    
+    buffer[PAYLOAD_WIDTH-1] = NODE#
+    buffer[PAYLOAD_WIDTH-2] = MSGID
+
+
 */
-void Save_RadioData(void){
+uint8_t Save_RadioData(void){
 	
 	uint8_t i;
+	uint8_t ReturnValue;
+	
+	ReturnValue = 0;
 	
 	nrf_read_payload();
 	
-	for (i=0; i < PAYLOAD_WIDTH; i++)
-	{
-		
-		NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
-		
+// This If is used to ignore it MASTER NODDE own relayed messages 
+
+	if(buffer[PAYLOAD_WIDTH-1] != LastNodeUsed || buffer[PAYLOAD_WIDTH-2] != MSGID ) {
+	    
+	    for (i=0; i < PAYLOAD_WIDTH; i++)
+	    {
+	    	//
+	    	NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
+            		
+            ReturnValue =1;		
+	    }
 	}
-	
+
+
+
+    return ReturnValue;
 }
 
 // Print the radio data in a JSON string.
