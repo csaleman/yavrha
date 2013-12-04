@@ -624,9 +624,7 @@ void reset_radio(){
 uint8_t Save_RadioData(void){
 	
 	uint8_t i;
-	uint8_t ReturnValue;
 	
-	ReturnValue = 0;
 	
 	nrf_read_payload();
 	
@@ -643,13 +641,13 @@ uint8_t Save_RadioData(void){
 	    	   
 	    	    NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
             		
-                ReturnValue =1;		
+                return 1;		
 	        }
 	
 	   }
 	}
 
-    return ReturnValue;
+    return 0;
 }
 
 
