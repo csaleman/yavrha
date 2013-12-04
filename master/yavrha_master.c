@@ -77,9 +77,11 @@ uint8_t CFG_ADDR[] = CONFIGURATION_ADDR;
 uint8_t NodesData[MAXSNODES][PAYLOAD_WIDTH];
 uint8_t PRINT_FLAG = 0;		// this is flag to enable continued data printout, just for debugging
 
-// Global variable for MSGID and Last Node Used
+// Global variable for MSGID, Last Node Used, Last Node Received, Last Node Received ID
 uint8_t MSGID;
 uint8_t LASTNODEUSED;
+uint8_t LASTNODERECEIVED;
+uint8_t LASTNODERECEIVEDID;
 
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
@@ -124,15 +126,23 @@ ISR (TIMER0_COMPA_vect)
 	}
 
 
-/* External interrupt caused by radio */
+/*  External interrupt caused by radio 
+    This function is called by NRF Radio Interrupt  
+*/
 
 ISR(INT0_vect) {
 	
 	// Save received data in structure
 	
-	if (PRINT_FLAG && Save_RadioData())		// Is verbose mode enable?
+	uint8_t temp;
+	
+	temp = Save_RadioData();
+	
+	if (PRINT_FLAG && temp)		// Is verbose mode enable and new Data is saved.
 	{
-	Print_RadioData();	// Print everything in usb
+
+    	Print_RadioData();	// Print everything in usb buffer
+
 	}	
 		PORTE ^= (1<<PORTE6);	// toggle led.
 }
@@ -473,13 +483,15 @@ void Cmd_Handler( char *CmdBuff) {
 										
 										/* Store the Last Node Used in the globa variable.
 										 This NODE# + MSID will be ignored while receiving data to prevent MASTER NODE to listen to 
-										*/ it own relayed message. 
-										
+										 it own relayed message. 
+										*/
 										LASTNODEUSED = temp;
 										
 										// Add a MSGID
 										
-										msg_to_send[PAYLOAD_WIDTH-2] = MSGID++;
+										MSGID = MSGID +1;
+										
+										msg_to_send[PAYLOAD_WIDTH-2] = MSGID;
 										
 										
 										// Load eeNRF_ADDRESS from EEPROM into ram_NRF_ADDR
@@ -621,18 +633,28 @@ uint8_t Save_RadioData(void){
 // This If is used to ignore it MASTER NODDE own relayed messages 
 
 	if(buffer[PAYLOAD_WIDTH-1] != LASTNODEUSED || buffer[PAYLOAD_WIDTH-2] != MSGID ) {
+
+// This If is used to ignore relayed (Duplicated) messages
+    
+	    if(buffer[PAYLOAD_WIDTH-1] != LASTNODERECEIVED || buffer[PAYLOAD_WIDTH-2] != LASTNODERECEIVEDID ) {
 	    
-	    for (i=0; i < PAYLOAD_WIDTH; i++)
-	    {
-	    	//
-	    	NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
+	        for (i=0; i < PAYLOAD_WIDTH; i++)
+	        {
+	    	   
+	    	    NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
             		
-            ReturnValue =1;		
-	    }
+                ReturnValue =1;		
+	        }
+	
+	   }
 	}
 
     return ReturnValue;
 }
+
+
+
+
 
 // Print the radio data in a JSON string.
 void Print_RadioData(void) {
