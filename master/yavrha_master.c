@@ -613,7 +613,7 @@ void reset_radio(){
 
 /* Save received data in global variable NodesData after interrupt
 	{NODE#, MSGID#, DATA3, DATA2, DATA1, DATA0}
-    Function Return 1 if valid data was received otherwise 0
+    Function Return 1 if new data was received otherwise 0
     
     
     buffer[PAYLOAD_WIDTH-1] = NODE#
@@ -624,8 +624,11 @@ void reset_radio(){
 uint8_t Save_RadioData(void){
 	
 	uint8_t i;
+	uint8_t ReturnValue;
 	
-	
+// Set Function Default Return Value 0
+    ReturnValue = 0;
+    
 	nrf_read_payload();
 	
 // This If is used to ignore it MASTER NODDE own relayed messages 
@@ -636,18 +639,26 @@ uint8_t Save_RadioData(void){
     
 	    if(buffer[PAYLOAD_WIDTH-1] != LASTNODERECEIVED || buffer[PAYLOAD_WIDTH-2] != LASTNODERECEIVEDID ) {
 	    
+// This is new message, save Node Number and MSGID to compare with future messages.
+ 	   
+	        LASTNODERECEIVED = buffer[PAYLOAD_WIDTH-1];
+	        LASTNODERECEIVEDID = buffer[PAYLOAD_WIDTH-2];
+	        
 	        for (i=0; i < PAYLOAD_WIDTH; i++)
 	        {
 	    	   
 	    	    NodesData[buffer[PAYLOAD_WIDTH-1]][i] = buffer[i];
-            		
-                return 1;		
+	
+                		
 	        }
 	
+// This is a new message, function will return 1
+	        ReturnValue = 1;
+	        
 	   }
 	}
 
-    return 0;
+    return ReturnValue;
 }
 
 
