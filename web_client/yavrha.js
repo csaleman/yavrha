@@ -427,7 +427,9 @@ function PostDimmerMessage(Node)
     var newPostVal = parseInt( $('#'+Node).val()) * 25;
 
     postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
-    t.publish(postTopic, $('#S'+Node).val() + " " + newPostVal,0,0);
+    message = new Messaging.Message($('#S'+Node).val() + " " + newPostVal);
+    message.destinationName = postTopic;
+    client.send(message);
 
 	//alert(postTopic +" "+ $('#S'+Node).val() + " " + newPostVal);
 }
