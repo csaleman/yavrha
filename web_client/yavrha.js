@@ -26,15 +26,17 @@
 
 
 // Global Variables
-	var localStorageKey1 = "MosquittoServer";
-	var localStorageKey2 = "MosquittoTopic";
- 	var localStorageKey3 = "MosquittoServerUser";
-	var localStorageKey4 = "MosquittoServerPassword";
+	var localStorageKey1 = "MQTTServer";
+	var localStorageKey2 = "MQTTTopic";
+ 	var localStorageKey3 = "MQTTServerUser";
+	var localStorageKey4 = "MQTTServerPassword";
+	var SERVER             // Used to store Server
 	var TOPIC = "";        // Used to store TOPIC
     var NodesObj = {};     // Main object where nodes data is stored
+    
+// MQTT Object 
+    var client;
 
-// Mosquitto Object
-	var t = new Mosquitto();
 
 // Nodes Object
 // {
@@ -55,11 +57,13 @@
 // 		This is the function that initiate jquery.
 //********************************************************
 
-        $(document).on('pageinit',"#main", function() {
+        $(document).on('pageinit', function() {
 //		Check if local storage is suported in the browser           
 			if (Modernizr.localstorage) {
-                showStoreValue();
-				MosquittoSetup(localStorage.getItem(localStorageKey1),localStorage.getItem(localStorageKey2));
+                showStoredValue();
+//      Save server name in Global variable				
+				SERVER = localStorage.getItem(localStorageKey1)
+				MQTTSetup(SERVER);
             }
             else {
                 $('#message').text("Unfortunately your browser doesn't support local storage");
@@ -69,16 +73,17 @@
            
 	        $('#addToStorage').click(function(e) {
 //				Save values into localstorage                
-				localStorage.setItem(localStorageKey1, $('#MosquittoServer').val());
-				localStorage.setItem(localStorageKey2, $('#MosquittoTopic').val());
-				localStorage.setItem(localStorageKey3, $('#MosquittoServerUser').val());
-				localStorage.setItem(localStorageKey4, $('#MosquittoServerPassword').val());
-//				Show Refresh values in page.
-				showStoreValue();
-//				Prevent Default action. In this case submit form.
-                e.preventDefault();
+				localStorage.setItem(localStorageKey1, $('#MQTTServer').val());
+				localStorage.setItem(localStorageKey2, $('#MQTTTopic').val());
+				localStorage.setItem(localStorageKey3, $('#MQTTServerUser').val());
+				localStorage.setItem(localStorageKey4, $('#MQTTServerPassword').val());
+
 //				Reload page with new settings.
 				location.reload();
+//				Show Refresh values in page.
+				showStoredValue();
+//				Prevent Default action. In this case submit form.
+                e.preventDefault();
 
             });
         });
@@ -86,94 +91,127 @@
 //********************************************************
 // Function to get values from browser's local storage
 //********************************************************
-function showStoreValue() {
-// Mosquitto Server
+function showStoredValue() {
+// MQTT Server
         	
-		$('#MosquittoServer').val(localStorage.getItem(localStorageKey1));
+		$('#MQTTServer').val(localStorage.getItem(localStorageKey1));
        
-// Mosquitto Topic
+// MQTT Topic
 	var item2 = localStorage.getItem(localStorageKey2);
         	
-		$('#MosquittoTopic').val(item2);
+		$('#MQTTTopic').val(item2);
 
 // Load Topic in global variable TOPIC		
 		TOPIC = item2;           
 
-// Mosquitto Server User
+// MQTT Server User
 	var item3 = localStorage.getItem(localStorageKey3);
         
-		$('#MosquittoServerUser').val(item3);
+		$('#MQTTServerUser').val(item3);
 
-// Mosquitto Server Password
+// MQTT Server Password
 	var item4 = localStorage.getItem(localStorageKey4);
         		
-		$('#MosquittoServerPassword').val(item4);
+		$('#MQTTServerPassword').val(item4);
 }
 
 //********************************************************
-// This function configure the mosquitto instance with a server and topic.
+// This function configure the MQTT instance with a server.
 //********************************************************
-function MosquittoSetup(server,topic)
+function MQTTSetup(server)
 {
-   if (server != null && topic != null) {
-    	t.connect(server,10000);
-    	t.subscribe(topic,0);
+   if (server != null) {
+    	console.log("Trying to Connect to " + server);
+    	client = new Messaging.Client( server, 80, "ClientId_"+ parseInt(Math.random() * 100, 10));
 // Set callback function
-		t.onmessage = StoreMsg;
+    	client.onConnect = onConnect;
+        client.onMessageArrived = onMessageArrived;
+        client.onConnectionLost = onConnectionLost;
+        client.connect({onSuccess:onConnect});
+
 	}
 
 }
 
+// Test function to delete
+
+function onMessageArrivedVoid(message) {
+
+    console.log(message.destinationName + " - " + message.payloadString);
+
+}
+
 //********************************************************
-// This function Refresh the values every 10 seconds.
+// This Callback function after connection Lost
 //********************************************************
 
-window.setInterval(RefreshFunctions, 10000);
+function onConnectionLost() {
+     
+     console.log("Connection Lost");
+
+// Try to reconnect     
+
+   client.connect({onSuccess:onConnect});
+     
+  }
+
+
+//********************************************************
+// This Callback function after Success Connect
+//********************************************************
+
+
+function onConnect() {
+     
+     console.log("Connected");
+     client.subscribe(TOPIC);
+     console.log("Subscribed to " + TOPIC);
+     
+  }
+
+
+//********************************************************
+// This function Refresh the values every 5 seconds.
+//********************************************************
+
+window.setInterval(RefreshFunctions, 5000);
 
 function RefreshFunctions() { 
     
-//        alert('test'); 
 
 //      Update all controls values
         UpdateValues();
-
-//      Reconnect Mosquitto JS Client after Keepalive expires
-
- MosquittoSetup(localStorage.getItem(localStorageKey1),localStorage.getItem(localStorageKey2));       
-
 
 }
 
 
 //********************************************************
-// This function is a callback from the mosquitto instance
+// This function is a callback from the MQTT instance
 //********************************************************
-function StoreMsg(Topic, Payload, qos, retain){
-    
-
-//  alert(topic);
-	SubMsg = document.getElementById('SubMsg');
-	
+function onMessageArrived(message){
+  
 //  Split topic to get Node Number ej. "topic/node1/name"
 
-	TopicArray = Topic.split('/');
+	TopicArray = message.destinationName.split('/');
 	NodeNumber = TopicArray[1];
 	MsgName	   = TopicArray[2];
 	
+	//console.log(NodeNumber);
+	//console.log(MsgName);
 
 //	cannot add value in an object that doesn't exist yet.
-//	this create an emptly object for the node number if it doesn't exist
+//	this create an emptly object for the node number if it doesn't exist first
 
 	if (typeof NodesObj[NodeNumber]=='undefined'){
 		
 		NodesObj[NodeNumber] = {};
-		NodesObj[NodeNumber][MsgName] = Payload;
+		NodesObj[NodeNumber][MsgName] = message.payloadString;
 	}
 	else {
 		
 //		Save the value "Payload" in the property "MsgName" for a given Node
 
-            NodesObj[NodeNumber][MsgName] = Payload;
+            NodesObj[NodeNumber][MsgName] = message.payloadString;
 
     }
 
@@ -194,9 +232,9 @@ function StoreMsg(Topic, Payload, qos, retain){
        
          UpdateValues();
      }
-       
-	 //DebugWindow.value = JSON.stringify(NodesObj);
-	 //console.log(NodesObj);	
+ 
+//	 $('#DebugWindow').val(JSON.stringify(NodesObj));
+//	 console.log(NodesObj);	
 
 }
 
@@ -369,11 +407,13 @@ function UpdateValues(){
 //***************************************************************************************
 function PostSwitchMessage(Node, PostVal)
 {
+    postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";    
+    message = new Messaging.Message(PostVal);
+    message.destinationName = postTopic;
+    client.send(message);
 
-    postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
-    t.publish(postTopic, PostVal,0,0);
-
-	//alert(postTopic);
+	//console.log(postTopic);
+	//console.log(PostVal);
 }
 
 //*********************************************************************************************
