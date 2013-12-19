@@ -272,7 +272,7 @@ function PaintScreen()
 										   </option> </select>\
                                            <label for="node'+ Node["number"] + '" class="ui-hidden-accessible">Input slider:</label> \
                                            <input type="range" name="node'+ Node["number"] + '" id="node'+ Node["number"] + '" \
-                                           value="5" min="0" max="10" step="1" data-highlight="true" data-mini="true"/></li>');
+                                           value="5" min="0" max="100" step="1" data-highlight="true" data-mini="true"/></li>');
                     
 //                	Refresh the CSS in the list. The event handlers MUST be set after refreshing the list. 
                     $('#MainUl').listview("refresh").trigger("create"); 
@@ -389,7 +389,7 @@ function UpdateValues(){
 				case 129:
                     // This command assign a new value to the widget and refresh it.                        
                         $('#S'+NodeNumber).val(Node["data0"]).slider("refresh");
-                        $('#'+NodeNumber).val(parseInt(Node["data1"]) / 25).slider("refresh");
+                        $('#'+NodeNumber).val(Math.ceil(parseInt(Node["data1"]) / 2.55)).slider("refresh");
 
 					break;
 				case 130:
@@ -423,9 +423,10 @@ function PostSwitchMessage(Node, PostVal)
 //*********************************************************************************************
 function PostDimmerMessage(Node)
 {
-   //Since slider will step from 1 to 10, I will multiply the value by 25
-    var newPostVal = parseInt( $('#'+Node).val()) * 25;
+//  Since slider will step from 1 to 100, I will multiply the value by 2.55
+    var newPostVal = Math.floor(parseInt( $('#'+Node).val()) * 2.55);
 
+    console.log(newPostVal);    
     postTopic = TOPIC.substring(0, TOPIC.length - 1) + Node + "/cmd";
     message = new Messaging.Message($('#S'+Node).val() + " " + newPostVal);
     message.destinationName = postTopic;
