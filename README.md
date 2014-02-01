@@ -13,7 +13,7 @@ Easy to get components
 Powered Nodes can relay messages
 Very Low power consumption
 Two way communication
-Must be able to connect to cloud services. (Cosm, twitter, myrobot, nimbits, etc )
+Must be able to connect to cloud services. (Thingspeak,twitter, myrobot, nimbits, etc )
 It is not:
 
 Is not compatible with ANT, Zigbee, BT or anything like that.
